@@ -1,26 +1,48 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
+import { Project, ProjectDocument } from './entities/project.entity';
 
 @Injectable()
 export class ProjectsService {
-  create(createProjectDto: CreateProjectDto) {
-    return 'This action adds a new project';
+  constructor(
+    @InjectModel(Project.name)
+    private readonly projectModel: Model<ProjectDocument>,
+  ) {}
+
+  async create(createProjectDto: CreateProjectDto): Promise<Project> {
+    const created = new this.projectModel(createProjectDto);
+    return created.save();
   }
 
-  findAll() {
-    return `This action returns all projects`;
+  async findAll(): Promise<Project[]> {
+    return this.projectModel.find().sort({ createdAt: -1 }).exec();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} project`;
+  async findOne(id: string): Promise<Project | null> {
+    return this.projectModel.findById(id).exec();
   }
 
-  update(id: number, updateProjectDto: UpdateProjectDto) {
-    return `This action updates a #${id} project`;
+  async update(
+    id: string,
+    updateProjectDto: UpdateProjectDto,
+  ): Promise<Project> {
+    const updated = await this.projectModel
+      .findByIdAndUpdate(
+        id,
+        { ...updateProjectDto, updatedAt: new Date() },
+        { new: true },
+      )
+      .exec();
+    if (!updated) throw new NotFoundException('Project not found');
+    return updated;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} project`;
+  async remove(id: string): Promise<Project> {
+    const deleted = await this.projectModel.findByIdAndDelete(id).exec();
+    if (!deleted) throw new NotFoundException('Project not found');
+    return deleted;
   }
 }

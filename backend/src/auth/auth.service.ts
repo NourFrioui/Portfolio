@@ -1,76 +1,92 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UsersService } from '../users/users.service';
-import { CreateUserDto } from '../users/dto/create-user.dto';
-import { LoginDto } from './dto/login.dto';
+import { User } from '../users/entities/user.entity';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    @InjectModel(User.name) private userModel: Model<User>,
     private jwtService: JwtService,
   ) {}
 
-  async register(createUserDto: CreateUserDto) {
-    // Check if user already exists
-    const existingUser = await this.usersService.findByUsername(
-      createUserDto.username,
-    );
-    if (existingUser) {
-      throw new Error('User already exists');
+  async login(email: string, password: string): Promise<any> {
+    try {
+      const userEmail = email.toLowerCase();
+
+      const existingUser = await this.userModel
+        .findOne({ email: userEmail })
+        .select('+password');
+
+      //verify credentials
+      if (!existingUser) {
+        throw new UnauthorizedException('invalid email');
+      }
+      const verifyPwd = await bcrypt.compare(password, existingUser.password);
+      if (!verifyPwd) {
+        throw new UnauthorizedException('invalid password');
+      }
+      const payload = {
+        sub: existingUser._id,
+        email: existingUser.email,
+        role: existingUser.role,
+      };
+      const accessToken = await this.jwtService.signAsync(payload);
+      await this.updateRefreshToken(existingUser.id, accessToken);
+
+      return {
+        profile: existingUser,
+        accessToken: accessToken,
+      };
+    } catch (error) {
+      return error;
     }
-
-    // Hash the password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(
-      createUserDto.password,
-      saltRounds,
-    );
-
-    // Create user with hashed password
-    const user = await this.usersService.create({
-      ...createUserDto,
-      password: hashedPassword,
+  }
+  async updateRefreshToken(userId: number, token: string) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      token,
     });
-
-    // Generate JWT token
-    const payload = { username: user.username, sub: (user as any)._id };
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: (user as any)._id,
-        username: user.username,
-        email: user.email,
-      },
-    };
   }
 
-  async login(loginDto: LoginDto) {
-    // Find user by username
-    const user = await this.usersService.findByUsername(loginDto.username);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+  async refreshTokens(token: string) {
+    try {
+      const decodedToken = this.jwtService.decode(token);
+      if (!decodedToken) {
+        throw new ForbiddenException('Invalid token');
+      }
 
-    // Check password
-    const isPasswordValid = await bcrypt.compare(
-      loginDto.password,
-      user.password,
-    );
-    if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+      const userId = decodedToken.sub;
 
-    // Generate JWT token
-    const payload = { username: user.username, sub: (user as any)._id };
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: (user as any)._id,
-        username: user.username,
-        email: user.email,
-      },
-    };
+      const user = await this.userModel.findById(userId);
+
+      if (!user) {
+        throw new ForbiddenException('Access Denied');
+      }
+
+      const payload: {
+        sub: number;
+        email?: string;
+      } = {
+        sub: user.id,
+      };
+
+      if (decodedToken.email) {
+        payload.email = decodedToken.email;
+      }
+
+      const accessToken = await this.jwtService.signAsync(payload);
+      await this.updateRefreshToken(user.id, accessToken);
+      return {
+        accessToken: accessToken,
+      };
+    } catch (error) {
+      return error;
+    }
   }
 }

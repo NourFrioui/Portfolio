@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,11 +10,11 @@ const Header = () => {
   };
 
   const navItems = [
-    { id: 1, label: 'Home', href: '#home' },
-    { id: 2, label: 'About', href: '#about' },
-    { id: 3, label: 'Skills', href: '#skills' },
-    { id: 4, label: 'Projects', href: '#projects' },
-    { id: 5, label: 'Contact', href: '#contact' },
+    { id: 1, label: "Home", href: "#home" },
+    { id: 2, label: "About", href: "#about" },
+    { id: 3, label: "Skills", href: "#skills" },
+    { id: 4, label: "Projects", href: "#projects" },
+    { id: 5, label: "Contact", href: "#contact" },
   ];
 
   return (
@@ -22,9 +22,7 @@ const Header = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Logo */}
-          <div className="text-2xl font-bold text-gray-800">
-            Portfolio
-          </div>
+          <div className="text-2xl font-bold text-gray-800">Portfolio</div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex space-x-8">
@@ -39,13 +37,19 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Contact Button */}
+          {/* Contact/Login Buttons */}
           <div className="hidden md:block">
             <a
               href="#contact"
               className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition-colors duration-300"
             >
               Contact Me
+            </a>
+            <a
+              href="/admin/login"
+              className="ml-3 border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors duration-300"
+            >
+              Admin Login
             </a>
           </div>
 
@@ -102,6 +106,13 @@ const Header = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact Me
+              </a>
+              <a
+                href="/admin/login"
+                className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-full text-center transition-colors duration-300"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Admin Login
               </a>
             </div>
           </div>
