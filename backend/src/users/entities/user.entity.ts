@@ -98,6 +98,34 @@ export class User {
 
   @Prop()
   CV: string;
+
+  // Portfolio specific fields
+  @Prop()
+  fullName: string;
+
+  @Prop()
+  title: string;
+
+  @Prop()
+  location: string;
+
+  @Prop()
+  profileImage: string;
+
+  @Prop()
+  resumeUrl: string;
+
+  @Prop({ default: 0 })
+  yearsOfExperience: number;
+
+  @Prop({ default: true })
+  availableForWork: boolean;
+
+  @Prop()
+  hourlyRate: string;
+
+  @Prop({ type: [String], default: [] })
+  languages: string[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

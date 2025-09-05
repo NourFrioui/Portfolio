@@ -11,10 +11,10 @@ import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
 
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
+import { ParseObjectIdPipe } from '../common/pipes/parse-objectid.pipe';
 
 @ApiTags('contact')
-@ApiBearerAuth()
 @Controller('contact')
 export class ContactController {
   constructor(private readonly contactService: ContactService) {}
@@ -30,17 +30,25 @@ export class ContactController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseObjectIdPipe) id: string) {
     return this.contactService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateContactDto: UpdateContactDto) {
+  update(
+    @Param('id', ParseObjectIdPipe) id: string,
+    @Body() updateContactDto: UpdateContactDto,
+  ) {
     return this.contactService.update(id, updateContactDto);
   }
 
+  @Patch(':id/read')
+  markAsRead(@Param('id', ParseObjectIdPipe) id: string) {
+    return this.contactService.markAsRead(id);
+  }
+
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseObjectIdPipe) id: string) {
     return this.contactService.remove(id);
   }
 }

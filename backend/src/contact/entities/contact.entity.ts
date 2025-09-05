@@ -19,3 +19,5 @@ export class Contact {
 }
 
 export const ContactSchema = SchemaFactory.createForClass(Contact);
+ContactSchema.index({ createdAt: -1 });
+ContactSchema.index({ email: 1 });

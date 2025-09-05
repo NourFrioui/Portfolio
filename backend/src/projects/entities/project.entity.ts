@@ -25,3 +25,5 @@ export class Project {
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
+ProjectSchema.index({ createdAt: -1 });
+ProjectSchema.index({ title: 'text', description: 'text', category: 1 });

@@ -1,12 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { User, UserDocument } from './entities/user.entity';
 import { generateRandomPassword } from 'src/common/utils';
 import * as bcrypt from 'bcrypt';
@@ -56,5 +53,28 @@ export class UsersService {
 
   async remove(id: string): Promise<UserDocument | null> {
     return this.userModel.findByIdAndDelete(id).exec();
+  }
+
+  // Portfolio profile methods
+  async getProfile(id: string): Promise<UserDocument | null> {
+    return this.userModel.findById(id).select('-password').exec();
+  }
+
+  async updateProfile(
+    id: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<UserDocument | null> {
+    return this.userModel
+      .findByIdAndUpdate(id, updateProfileDto, { new: true })
+      .select('-password')
+      .exec();
+  }
+
+  async getPublicProfile(): Promise<UserDocument | null> {
+    // Get the first admin user as the portfolio owner
+    return this.userModel
+      .findOne({ role: 'admin' })
+      .select('-password -email')
+      .exec();
   }
 }

@@ -1,27 +1,33 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
-import { ProjectsModule } from './projects/projects.module';
 import { UsersModule } from './users/users.module';
-import { ContactModule } from './contact/contact.module';
+import { ProjectsModule } from './projects/projects.module';
 import { TechnologiesModule } from './technologies/technologies.module';
-import { SkillsModule } from './skills/skills.module';
+import { ContactModule } from './contact/contact.module';
+import { UploadModule } from './upload/upload.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { ExperienceModule } from './experience/experience.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MongooseModule.forRoot(
-      process.env.MONGO_URI || 'mongodb://localhost/portfolio',
+      process.env.MONGO_URI || 'mongodb://localhost:27017/portfolio',
     ),
     AuthModule,
-    ProjectsModule,
     UsersModule,
-    ContactModule,
+    ProjectsModule,
     TechnologiesModule,
-    SkillsModule,
+    ContactModule,
+    UploadModule,
+    DashboardModule,
+    ExperienceModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}

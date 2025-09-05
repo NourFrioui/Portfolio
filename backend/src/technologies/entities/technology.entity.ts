@@ -19,3 +19,5 @@ export class Technology {
 }
 
 export const TechnologySchema = SchemaFactory.createForClass(Technology);
+TechnologySchema.index({ name: 1 });
+TechnologySchema.index({ createdAt: -1 });

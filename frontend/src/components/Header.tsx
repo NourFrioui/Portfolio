@@ -1,123 +1,83 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import Link from 'next/link';
 
-const Header = () => {
+const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const navItems = [
-    { id: 1, label: "Home", href: "#home" },
-    { id: 2, label: "About", href: "#about" },
-    { id: 3, label: "Skills", href: "#skills" },
-    { id: 4, label: "Projects", href: "#projects" },
-    { id: 5, label: "Contact", href: "#contact" },
+  const navigation = [
+    { name: 'Home', href: '#home' },
+    { name: 'About', href: '#about' },
+    { name: 'Experience', href: '#experience' },
+    { name: 'Skills', href: '#skills' },
+    { name: 'Projects', href: '#projects' },
+    { name: 'Contact', href: '#contact' },
   ];
 
   return (
-    <header className="fixed w-full bg-white bg-opacity-90 backdrop-blur-sm z-50 shadow-sm">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4">
-          {/* Logo */}
-          <div className="text-2xl font-bold text-gray-800">Portfolio</div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-8">
-            {navItems.map((item) => (
-              <a
-                key={item.id}
-                href={item.href}
-                className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-300"
-              >
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          {/* Contact/Login Buttons */}
-          <div className="hidden md:block">
-            <a
-              href="#contact"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-full transition-colors duration-300"
-            >
-              Contact Me
-            </a>
-            <a
-              href="/admin/login"
-              className="ml-3 border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-6 rounded-full transition-colors duration-300"
-            >
-              Admin Login
-            </a>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <Link href="/" className="text-xl font-bold text-gray-900">
+              Portfolio
+            </Link>
           </div>
 
-          {/* Mobile Menu Button */}
+          {/* Desktop navigation */}
+          <div className="hidden md:block">
+            <div className="ml-10 flex items-baseline space-x-4">
+              {navigation.map((item) => (
+                <a
+                  key={item.name}
+                  href={item.href}
+                  className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                >
+                  {item.name}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile menu button */}
           <div className="md:hidden">
             <button
-              onClick={toggleMenu}
-              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-blue-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                {isMenuOpen ? (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                ) : (
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                )}
-              </svg>
+              <span className="sr-only">Open main menu</span>
+              {!isMenuOpen ? (
+                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              ) : (
+                <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Mobile Navigation */}
+        {/* Mobile menu */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
-            <div className="flex flex-col space-y-4">
-              {navItems.map((item) => (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t border-gray-200">
+              {navigation.map((item) => (
                 <a
-                  key={item.id}
+                  key={item.name}
                   href={item.href}
-                  className="text-gray-600 hover:text-gray-900 font-medium transition-colors duration-300"
+                  className="text-gray-700 hover:text-blue-600 block px-3 py-2 rounded-md text-base font-medium transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {item.label}
+                  {item.name}
                 </a>
               ))}
-              <a
-                href="#contact"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-full text-center transition-colors duration-300"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Contact Me
-              </a>
-              <a
-                href="/admin/login"
-                className="border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-full text-center transition-colors duration-300"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Admin Login
-              </a>
             </div>
           </div>
         )}
-      </div>
+      </nav>
     </header>
   );
 };
