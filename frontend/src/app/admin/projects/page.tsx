@@ -308,23 +308,13 @@ export default function AdminProjectsPage() {
             <h1 className="text-2xl font-bold text-slate-900">Projects Management</h1>
             <p className="text-slate-600 mt-1">Manage your portfolio projects</p>
           </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="/admin/tags"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Manage Tags
-            </a>
-            <button
-              onClick={() => openModal()}
-              className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-            >
-              <span className="text-lg">+</span>
-              Add Project
-            </button>
-          </div>
+          <button
+            onClick={() => openModal()}
+            className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+          >
+            <span className="text-lg">+</span>
+            Add Project
+          </button>
         </div>
 
         {error && (
@@ -492,19 +482,9 @@ export default function AdminProjectsPage() {
                     )}
                   </div>
 
-                  {/* Tags multi-select + input */}
+                  {/* Tags multi-select (preset only) */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-slate-700">Tags</label>
-                      <a
-                        href="/admin/tags"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-indigo-600 hover:text-indigo-700"
-                      >
-                        Manage Tags ↗
-                      </a>
-                    </div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Tags</label>
                     {/* Preset tags as selectable chips */}
                     {allTags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2 border border-slate-300 rounded-lg p-3">
@@ -527,25 +507,7 @@ export default function AdminProjectsPage() {
                         })}
                       </div>
                     )}
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {(formData.tags || []).map((tag) => (
-                        <span key={tag} className="flex items-center gap-1 px-2 py-1 rounded-full text-sm bg-slate-100 text-slate-700">
-                          {tag}
-                          <button type="button" className="ml-1 text-slate-500 hover:text-slate-700" onClick={() => removeTag(tag)}>✕</button>
-                        </span>
-                      ))}
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
-                        placeholder="Type a tag and press Enter or Add"
-                        className="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      />
-                      <button type="button" onClick={addTag} className="px-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200">Add</button>
-                    </div>
+                    {/* Manual add removed as requested */}
                   </div>
 
                   {/* Technologies multi-select */}

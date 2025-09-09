@@ -163,8 +163,22 @@ export default function AdminExperiencePage() {
 
   const openModal = (experience?: Experience) => {
     if (experience) {
+      // normalize date strings for <input type="date">
+      const toDateInput = (d?: string) => {
+        if (!d) return '';
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return (d.length >= 10 ? d.slice(0,10) : '');
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+      };
       setEditingExperience(experience);
-      setFormData(experience);
+      setFormData({
+        ...experience,
+        startDate: toDateInput(experience.startDate),
+        endDate: toDateInput(experience.endDate),
+      });
     } else {
       resetForm();
     }
@@ -203,23 +217,13 @@ export default function AdminExperiencePage() {
             <h1 className="text-2xl font-bold text-slate-900">Work Experience</h1>
             <p className="text-slate-600 mt-1">Manage your professional work history</p>
           </div>
-          <div className="flex items-center gap-3">
-            <a
-              href="/admin/tags"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Manage Tags
-            </a>
-            <button
-              onClick={() => openModal()}
-              className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-            >
-              <span className="text-lg">+</span>
-              Add Experience
-            </button>
-          </div>
+          <button
+            onClick={() => openModal()}
+            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+          >
+            <span className="text-lg">+</span>
+            Add Experience
+          </button>
         </div>
 
         {error && (
@@ -497,59 +501,28 @@ export default function AdminExperiencePage() {
                     </div>
                   </div>
 
-                  {/* Tags selection */}
+                  {/* Tags selection (preset list only) */}
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-sm font-medium text-slate-700">
-                        Tags
-                      </label>
-                      <a
-                        href="/admin/tags"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-green-700 hover:text-green-800"
-                      >
-                        Manage Tags ↗
-                      </a>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-2 border border-slate-300 rounded-lg p-3">
-                      {allTags.map((tag) => {
-                        const selected = (formData.tags || []).includes(tag);
-                        return (
-                          <button
-                            type="button"
-                            key={tag}
-                            onClick={() => {
-                              const set = new Set(formData.tags || []);
-                              if (set.has(tag)) set.delete(tag); else set.add(tag);
-                              setFormData({ ...formData, tags: Array.from(set) });
-                            }}
-                            className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
-                          >
-                            {tag}
-                          </button>
-                        );
-                      })}
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={tagInput}
-                        onChange={(e) => setTagInput(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); if (tagInput.trim()) { setFormData({ ...formData, tags: Array.from(new Set([...(formData.tags || []), tagInput.trim()])) }); setTagInput(''); } } }}
-                        placeholder="Type a tag and press Enter to add"
-                        className="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      />
-                      <button type="button" onClick={() => { if (tagInput.trim()) { setFormData({ ...formData, tags: Array.from(new Set([...(formData.tags || []), tagInput.trim()])) }); setTagInput(''); } }} className="px-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200">Add</button>
-                    </div>
-                    {(formData.tags && formData.tags.length > 0) && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {formData.tags!.map((t) => (
-                          <span key={t} className="flex items-center gap-1 px-2 py-1 rounded-full text-sm bg-slate-100 text-slate-700">
-                            {t}
-                            <button type="button" className="ml-1 text-slate-500 hover:text-slate-700" onClick={() => setFormData({ ...formData, tags: (formData.tags || []).filter(x => x !== t) })}>✕</button>
-                          </span>
-                        ))}
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Tags</label>
+                    {allTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2 border border-slate-300 rounded-lg p-3">
+                        {allTags.map((tag) => {
+                          const selected = (formData.tags || []).includes(tag);
+                          return (
+                            <button
+                              type="button"
+                              key={tag}
+                              onClick={() => {
+                                const set = new Set(formData.tags || []);
+                                if (set.has(tag)) set.delete(tag); else set.add(tag);
+                                setFormData({ ...formData, tags: Array.from(set) });
+                              }}
+                              className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                            >
+                              {tag}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
