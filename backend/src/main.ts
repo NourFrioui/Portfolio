@@ -4,9 +4,11 @@ import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Global validation pipe
   app.useGlobalPipes(
@@ -23,12 +25,18 @@ async function bootstrap() {
   // Global exception filters
   app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());
 
-  // Enable CORS
-  app.enableCors({
-    origin: process.env.FRONTEND_URL || '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
+  // Serve static files from uploads directory
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
   });
+
+  // Serve static files from public/images directory
+  app.useStaticAssets(join(__dirname, '..', 'public', 'images'), {
+    prefix: '/images/',
+  });
+
+  // Enable CORS
+  app.enableCors();
 
   // Swagger configuration
   const config = new DocumentBuilder()
@@ -45,4 +53,4 @@ async function bootstrap() {
   console.log(`Application is running on: http://localhost:${port}`);
   console.log(`Swagger documentation: http://localhost:${port}/api`);
 }
-bootstrap();
+void bootstrap();

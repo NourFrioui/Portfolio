@@ -31,6 +31,10 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
   location?: string;
 
   @IsOptional()
@@ -54,11 +58,11 @@ export class UpdateProfileDto {
   twitter?: string;
 
   @IsOptional()
-  @IsUrl()
-  profileImage?: string;
+  @IsString()
+  profileImageUrl?: string;
 
   @IsOptional()
-  @IsUrl()
+  @IsString()
   resumeUrl?: string;
 
   @IsOptional()

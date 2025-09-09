@@ -3,38 +3,74 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../../components/admin/AdminLayout";
 
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+  }
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
 type Project = {
   _id?: string;
   title: string;
   description: string;
-  category?: string;
+  detailedDescription?: string;
+  categoryId?: string;
   imageUrl?: string;
+  images?: string[];
   technologies?: string[];
+  tags?: string[];
   status?: string;
   startDate?: string;
   endDate?: string;
   githubUrl?: string;
-  liveUrl?: string;
+  projectUrl?: string;
   features?: string[];
+  challenges?: string[];
+  solutions?: string[];
+  order?: number;
+  isFeatured?: boolean;
+  isActive?: boolean;
+};
+
+type Category = {
+  _id: string;
+  name: string;
+  description: string;
+  color: string;
+  icon: string;
+  order: number;
+  isActive: boolean;
 };
 
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [allTechnologies, setAllTechnologies] = useState<string[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState<Project>({
     title: "",
     description: "",
-    category: "",
+    detailedDescription: "",
+    categoryId: "",
     technologies: [],
+    tags: [],
     status: "planning",
     startDate: "",
     endDate: "",
     githubUrl: "",
-    liveUrl: "",
+    projectUrl: "",
     features: [],
+    challenges: [],
+    solutions: [],
+    images: [],
+    order: 1,
+    isFeatured: false,
+    isActive: true
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -48,8 +84,44 @@ export default function AdminProjectsPage() {
     setProjects(data);
   };
 
+  const fetchTags = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/tags`);
+      const data = await res.json();
+      const names: string[] = (data || []).map((t: any) => (typeof t === 'string' ? t : t.name)).filter(Boolean);
+      setAllTags(names);
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    }
+  };
+
+  const fetchTechnologies = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/technologies`);
+      const data = await res.json();
+      // Expecting array of objects with name field or plain strings
+      const names: string[] = (data || []).map((t: any) => (typeof t === 'string' ? t : t.name)).filter(Boolean);
+      setAllTechnologies(names);
+    } catch (error) {
+      console.error('Error fetching technologies:', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/categories`);
+      const data = await res.json();
+      setCategories(data.filter((cat: Category) => cat.isActive));
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   useEffect(() => {
     fetchProjects();
+    fetchCategories();
+    fetchTechnologies();
+    fetchTags();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,14 +133,50 @@ export default function AdminProjectsPage() {
         ? `${API_BASE}/projects/${editingProject._id}`
         : `${API_BASE}/projects`;
       const method = editingProject ? "PATCH" : "POST";
-      
+      // Build a safe payload with only allowed fields (DTO)
+      const isValidHttpUrl = (value?: string): boolean => {
+        try {
+          if (!value) return false;
+          const url = new URL(value);
+          return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch {
+          return false;
+        }
+      };
+      const normalizeUrl = (u?: string) => {
+        const abs = buildAbsoluteUrl(u);
+        return isValidHttpUrl(abs) ? abs : undefined;
+      };
+      let payload: any = {
+        title: formData.title,
+        description: formData.description,
+        detailedDescription: formData.detailedDescription || undefined,
+        categoryId: formData.categoryId || undefined,
+        imageUrl: normalizeUrl(formData.imageUrl),
+        images: (formData.images || []).map((x) => normalizeUrl(x)).filter(Boolean) as string[],
+        technologies: formData.technologies || [],
+        tags: formData.tags || [],
+        status: formData.status || undefined,
+        githubUrl: normalizeUrl(formData.githubUrl) || undefined,
+        projectUrl: normalizeUrl(formData.projectUrl) || undefined,
+        features: formData.features || [],
+        challenges: formData.challenges || [],
+        solutions: formData.solutions || [],
+        order: formData.order || 1,
+        isFeatured: formData.isFeatured || false,
+        isActive: formData.isActive !== false,
+      };
+      if (!payload.imageUrl) delete payload.imageUrl;
+      // Debug: Inspect final payload (remove for production if desired)
+      console.debug('[AdminProjects] submitting payload', payload);
+
       const res = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       if (!res.ok)
         throw new Error(`Failed to ${editingProject ? 'update' : 'add'} project`);
@@ -87,14 +195,22 @@ export default function AdminProjectsPage() {
     setFormData({
       title: "",
       description: "",
-      category: "",
+      detailedDescription: "",
+      categoryId: "",
       technologies: [],
+      tags: [],
       status: "planning",
       startDate: "",
       endDate: "",
       githubUrl: "",
-      liveUrl: "",
+      projectUrl: "",
       features: [],
+      challenges: [],
+      solutions: [],
+      images: [],
+      order: projects.length + 1,
+      isFeatured: false,
+      isActive: true
     });
     setEditingProject(null);
   };
@@ -107,6 +223,64 @@ export default function AdminProjectsPage() {
       resetForm();
     }
     setShowModal(true);
+  };
+
+  // Images handling
+  const buildAbsoluteUrl = (raw?: string | null) => {
+    const u = (raw || '').trim();
+    if (!u) return '';
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    if (u.startsWith('/')) return `${API_BASE}${u}`;
+    // handle common backend return shapes
+    if (u.includes('uploads/')) return `${API_BASE}/${u}`; // served statically
+    // assume it's a filename under /upload/:filename
+    return `${API_BASE}/upload/${u}`;
+  };
+
+  const handleImagesSelected = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const newUrls: string[] = [];
+    for (const file of Array.from(files)) {
+      const body = new FormData();
+      body.append('file', file);
+      try {
+        const res = await fetch(`${API_BASE}/upload/image`, { method: 'POST', body, headers: { Authorization: `Bearer ${token || ''}` } });
+        if (!res.ok) throw new Error('Upload failed');
+        const data = await res.json();
+        let finalUrl = '';
+        if (data?.url) finalUrl = buildAbsoluteUrl(data.url);
+        else if (data?.filename) finalUrl = buildAbsoluteUrl(data.filename);
+        else if (data?.path) finalUrl = buildAbsoluteUrl(data.path);
+        if (finalUrl) newUrls.push(finalUrl);
+      } catch (err) {
+        console.error('Image upload error:', err);
+      }
+    }
+    const merged = [...(formData.images || []), ...newUrls.filter(Boolean)];
+    setFormData({ ...formData, images: merged, imageUrl: formData.imageUrl || merged[0] });
+  };
+
+  const removeImageAt = (idx: number) => {
+    const next = (formData.images || []).filter((_, i) => i !== idx);
+    const nextMain = formData.imageUrl && formData.imageUrl === formData.images?.[idx]
+      ? (next[0] || '')
+      : formData.imageUrl;
+    setFormData({ ...formData, images: next, imageUrl: nextMain });
+  };
+
+  const setMainImage = (url: string) => setFormData({ ...formData, imageUrl: url });
+
+  // Tags handling
+  const [tagInput, setTagInput] = useState('');
+  const addTag = () => {
+    const value = tagInput.trim();
+    if (!value) return;
+    const exists = (formData.tags || []).includes(value);
+    if (!exists) setFormData({ ...formData, tags: [ ...(formData.tags || []), value ] });
+    setTagInput('');
+  };
+  const removeTag = (value: string) => {
+    setFormData({ ...formData, tags: (formData.tags || []).filter(t => t !== value) });
   };
 
   const deleteProject = async (id?: string) => {
@@ -134,13 +308,23 @@ export default function AdminProjectsPage() {
             <h1 className="text-2xl font-bold text-slate-900">Projects Management</h1>
             <p className="text-slate-600 mt-1">Manage your portfolio projects</p>
           </div>
-          <button
-            onClick={() => openModal()}
-            className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-          >
-            <span className="text-lg">+</span>
-            Add Project
-          </button>
+          <div className="flex items-center gap-3">
+            <a
+              href="/admin/tags"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Manage Tags
+            </a>
+            <button
+              onClick={() => openModal()}
+              className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+            >
+              <span className="text-lg">+</span>
+              Add Project
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -157,9 +341,9 @@ export default function AdminProjectsPage() {
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">{project.title}</h3>
                   <p className="text-slate-600 text-sm mb-3 line-clamp-2">{project.description}</p>
-                  {project.category && (
+                  {project.categoryId && (
                     <span className="inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full">
-                      {project.category}
+                      {categories.find(cat => cat._id === project.categoryId)?.name || 'Unknown Category'}
                     </span>
                   )}
                 </div>
@@ -232,25 +416,186 @@ export default function AdminProjectsPage() {
                       <label className="block text-sm font-medium text-slate-700 mb-2">
                         Category
                       </label>
+                      <select
+                        value={formData.categoryId || ''}
+                        onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value="">Select category</option>
+                        {categories.map(cat => (
+                          <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Cover Image URL (optional) */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Cover Image URL (optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.imageUrl || ''}
+                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                      placeholder="https://your-cdn.com/cover.png or /uploads/cover.png or filename.png"
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <p className="text-xs text-slate-500 mt-1">
+                      You can paste an external URL, a server path (starting with /uploads/...), or select a main image below.
+                    </p>
+                    {formData.imageUrl && (
+                      <div className="mt-2 flex items-center gap-3">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={buildAbsoluteUrl(formData.imageUrl)}
+                          alt="cover-preview"
+                          className="w-20 h-20 object-cover rounded border border-slate-200"
+                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                        />
+                        <button
+                          type="button"
+                          className="px-3 py-1 text-sm bg-slate-100 rounded hover:bg-slate-200"
+                          onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Project Images */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Project Images</label>
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => handleImagesSelected(e.target.files)}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
+                    />
+                    {(formData.images && formData.images.length > 0) && (
+                      <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {formData.images!.map((url, idx) => (
+                          <div key={idx} className={`relative rounded-lg overflow-hidden border ${formData.imageUrl === url ? 'border-indigo-500' : 'border-slate-200'}`}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={url} alt={`image-${idx}`} className="w-full h-28 object-cover" />
+                            <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/50 to-transparent flex justify-between gap-2">
+                              <button type="button" onClick={() => setMainImage(url)} className="text-xs px-2 py-1 rounded bg-white/90 hover:bg-white">
+                                {formData.imageUrl === url ? 'Main' : 'Set Main'}
+                              </button>
+                              <button type="button" onClick={() => removeImageAt(idx)} className="text-xs px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700">Remove</button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Tags multi-select + input */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-sm font-medium text-slate-700">Tags</label>
+                      <a
+                        href="/admin/tags"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-indigo-600 hover:text-indigo-700"
+                      >
+                        Manage Tags ↗
+                      </a>
+                    </div>
+                    {/* Preset tags as selectable chips */}
+                    {allTags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2 border border-slate-300 rounded-lg p-3">
+                        {allTags.map((tag) => {
+                          const selected = (formData.tags || []).includes(tag);
+                          return (
+                            <button
+                              type="button"
+                              key={tag}
+                              onClick={() => {
+                                const set = new Set(formData.tags || []);
+                                if (set.has(tag)) set.delete(tag); else set.add(tag);
+                                setFormData({ ...formData, tags: Array.from(set) });
+                              }}
+                              className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                            >
+                              {tag}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {(formData.tags || []).map((tag) => (
+                        <span key={tag} className="flex items-center gap-1 px-2 py-1 rounded-full text-sm bg-slate-100 text-slate-700">
+                          {tag}
+                          <button type="button" className="ml-1 text-slate-500 hover:text-slate-700" onClick={() => removeTag(tag)}>✕</button>
+                        </span>
+                      ))}
+                    </div>
+                    <div className="flex gap-2">
                       <input
                         type="text"
-                        value={formData.category || ''}
-                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addTag(); } }}
+                        placeholder="Type a tag and press Enter or Add"
+                        className="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
+                      <button type="button" onClick={addTag} className="px-4 py-2 bg-slate-100 rounded-lg hover:bg-slate-200">Add</button>
+                    </div>
+                  </div>
+
+                  {/* Technologies multi-select */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Technologies</label>
+                    <div className="flex flex-wrap gap-2 border border-slate-300 rounded-lg p-3">
+                      {allTechnologies.map((tech) => {
+                        const selected = (formData.technologies || []).includes(tech);
+                        return (
+                          <button
+                            type="button"
+                            key={tech}
+                            onClick={() => {
+                              const set = new Set(formData.technologies || []);
+                              if (set.has(tech)) set.delete(tech); else set.add(tech);
+                              setFormData({ ...formData, technologies: Array.from(set) });
+                            }}
+                            className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                          >
+                            {tech}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Description *
+                      Short Description *
                     </label>
                     <textarea
                       value={formData.description}
                       onChange={(e) => setFormData({...formData, description: e.target.value})}
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                      rows={3}
+                      rows={2}
+                      placeholder="Brief description for project cards"
                       required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Detailed Description
+                    </label>
+                    <textarea
+                      value={formData.detailedDescription || ''}
+                      onChange={(e) => setFormData({...formData, detailedDescription: e.target.value})}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      rows={4}
+                      placeholder="Detailed description for project details page"
                     />
                   </div>
 
@@ -278,6 +623,99 @@ export default function AdminProjectsPage() {
                         value={formData.githubUrl || ''}
                         onChange={(e) => setFormData({...formData, githubUrl: e.target.value})}
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Live Project URL
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.projectUrl || ''}
+                        onChange={(e) => setFormData({...formData, projectUrl: e.target.value})}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Order
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.order || 1}
+                        onChange={(e) => setFormData({...formData, order: parseInt(e.target.value) || 1})}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        min="1"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isFeatured"
+                        checked={formData.isFeatured || false}
+                        onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label htmlFor="isFeatured" className="ml-2 text-sm font-medium text-slate-700">
+                        Featured Project
+                      </label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id="isActive"
+                        checked={formData.isActive !== false}
+                        onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                        className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                      />
+                      <label htmlFor="isActive" className="ml-2 text-sm font-medium text-slate-700">
+                        Active/Published
+                      </label>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Features (one per line)
+                    </label>
+                    <textarea
+                      value={formData.features?.join('\n') || ''}
+                      onChange={(e) => setFormData({...formData, features: e.target.value.split('\n').filter(f => f.trim())})}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      rows={3}
+                      placeholder="Feature 1\nFeature 2\nFeature 3"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Challenges (one per line)
+                      </label>
+                      <textarea
+                        value={formData.challenges?.join('\n') || ''}
+                        onChange={(e) => setFormData({...formData, challenges: e.target.value.split('\n').filter(c => c.trim())})}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        rows={3}
+                        placeholder="Challenge 1\nChallenge 2"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Solutions (one per line)
+                      </label>
+                      <textarea
+                        value={formData.solutions?.join('\n') || ''}
+                        onChange={(e) => setFormData({...formData, solutions: e.target.value.split('\n').filter(s => s.trim())})}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        rows={3}
+                        placeholder="Solution 1\nSolution 2"
                       />
                     </div>
                   </div>

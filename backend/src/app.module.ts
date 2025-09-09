@@ -9,6 +9,8 @@ import { ContactModule } from './contact/contact.module';
 import { UploadModule } from './upload/upload.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ExperienceModule } from './experience/experience.module';
+import { CategoryModule } from './category/category.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { ExperienceModule } from './experience/experience.module';
     UploadModule,
     DashboardModule,
     ExperienceModule,
+    CategoryModule,
+    TagsModule,
   ],
   controllers: [],
   providers: [],

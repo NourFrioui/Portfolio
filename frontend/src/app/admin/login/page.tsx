@@ -3,6 +3,13 @@
 import React, { useState } from "react";
 import Link from "next/link";
 
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+  }
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
 export default function AdminLoginPage() {

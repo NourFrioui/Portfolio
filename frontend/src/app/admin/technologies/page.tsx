@@ -3,6 +3,13 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../../components/admin/AdminLayout";
 
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+  }
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
 type Technology = {
@@ -10,22 +17,49 @@ type Technology = {
   name: string;
   percentage: number;
   iconUrl?: string;
-  category?: string;
+  categoryId?: string;
   description?: string;
+  icon?: string;
+  order?: number;
+  isActive?: boolean;
+};
+
+type Category = {
+  _id: string;
+  name: string;
+  description: string;
+  color: string;
+  icon: string;
+  order: number;
+  isActive: boolean;
 };
 
 export default function AdminTechnologiesPage() {
   const [technologies, setTechnologies] = useState<Technology[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingTech, setEditingTech] = useState<Technology | null>(null);
   const [formData, setFormData] = useState<Technology>({
     name: "",
     percentage: 50,
-    category: "",
+    categoryId: "",
     description: "",
+    icon: "",
+    order: 1,
+    isActive: true
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const buildAbsoluteUrl = (raw?: string | null) => {
+    const u = (raw || '').trim();
+    if (!u) return '';
+    if (u.startsWith('http://') || u.startsWith('https://')) return u;
+    if (u.startsWith('/')) return `${API_BASE}${u}`;
+    if (u.includes('uploads/')) return `${API_BASE}/${u}`;
+    return `${API_BASE}/upload/${u}`;
+  };
+
+  const isImg = (u?: string) => !!u && /\.(png|jpe?g|gif|svg|webp|bmp)$/i.test(u) || (u?.startsWith('http') || u?.startsWith('/'));
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
@@ -36,8 +70,19 @@ export default function AdminTechnologiesPage() {
     setTechnologies(data);
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/categories`);
+      const data = await res.json();
+      setCategories(data.filter((cat: Category) => cat.isActive));
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
   useEffect(() => {
     fetchTechnologies();
+    fetchCategories();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,14 +94,24 @@ export default function AdminTechnologiesPage() {
         ? `${API_BASE}/technologies/${editingTech._id}`
         : `${API_BASE}/technologies`;
       const method = editingTech ? "PATCH" : "POST";
-      
+      // Build a safe payload with only allowed fields
+      const payload = {
+        name: formData.name,
+        percentage: formData.percentage,
+        categoryId: formData.categoryId || undefined,
+        description: formData.description || undefined,
+        icon: formData.icon ? buildAbsoluteUrl(formData.icon) : undefined,
+        order: formData.order || 1,
+        isActive: formData.isActive !== false,
+      };
+
       const res = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(`Failed to ${editingTech ? 'update' : 'add'} technology`);
       
@@ -74,8 +129,11 @@ export default function AdminTechnologiesPage() {
     setFormData({
       name: "",
       percentage: 50,
-      category: "",
+      categoryId: "",
       description: "",
+      icon: "",
+      order: technologies.length + 1,
+      isActive: true
     });
     setEditingTech(null);
   };
@@ -106,7 +164,6 @@ export default function AdminTechnologiesPage() {
     }
   };
 
-  const categories = ["Frontend", "Backend", "Database", "Tools", "Design", "Mobile"];
 
   return (
     <AdminLayout>
@@ -137,16 +194,12 @@ export default function AdminTechnologiesPage() {
           {technologies.map((tech) => (
             <div key={tech._id} className="modern-card p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
+                <div className="flex-1 flex items-center gap-3">
+                  {tech.icon && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={buildAbsoluteUrl(tech.icon)} alt={`${tech.name}-icon`} className="w-8 h-8 object-contain rounded" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                  )}
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">{tech.name}</h3>
-                  {tech.description && (
-                    <p className="text-slate-600 text-sm mb-3">{tech.description}</p>
-                  )}
-                  {tech.category && (
-                    <span className="inline-block bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded-full mb-3">
-                      {tech.category}
-                    </span>
-                  )}
                 </div>
                 <div className="flex gap-2 ml-4">
                   <button
@@ -219,15 +272,60 @@ export default function AdminTechnologiesPage() {
                       Category
                     </label>
                     <select
-                      value={formData.category || ''}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
+                      value={formData.categoryId || ''}
+                      onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
                     >
                       <option value="">Select category</option>
                       {categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat._id} value={cat._id}>{cat.name}</option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Icon URL or Upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Icon URL (or upload an image below)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.icon || ''}
+                      onChange={(e) => setFormData({...formData, icon: e.target.value})}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                      placeholder="https://... or /uploads/... or filename.png"
+                    />
+                    <div className="mt-2 flex items-center gap-3">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {formData.icon && (
+                        <img src={buildAbsoluteUrl(formData.icon)} alt="icon-preview" className="w-10 h-10 object-contain rounded border border-slate-200" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                      )}
+                      <button type="button" className="px-3 py-1 text-sm bg-slate-100 rounded hover:bg-slate-200" onClick={() => setFormData({ ...formData, icon: '' })}>Clear</button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Upload Icon Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        const body = new FormData();
+                        body.append('file', f);
+                        try {
+                          const res = await fetch(`${API_BASE}/upload/image`, { method: 'POST', body });
+                          if (!res.ok) throw new Error('Upload failed');
+                          const data = await res.json();
+                          const url = data?.url || data?.filename || data?.path;
+                          if (url) setFormData({ ...formData, icon: buildAbsoluteUrl(url) });
+                        } catch (err) {
+                          console.error('Icon upload error:', err);
+                        }
+                      }}
+                      className="block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                    />
                   </div>
 
                   <div>

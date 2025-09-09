@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import {
   CanActivate,
   ExecutionContext,
@@ -14,6 +10,7 @@ import { Request } from 'express';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from 'src/users/entities/user.entity';
+import { jwtConstants } from '../constants/auth.constant';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -25,40 +22,28 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = extractTokenFromHeader(request);
+    console.log('🔑 TOKEN reçu:', token);
 
     if (!token) throw new UnauthorizedException();
 
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if (!jwtSecret) {
-      throw new Error('JWT secret not found in environment variables');
-    }
-
     try {
+      console.log('🔒 jwtConstants.secret:', jwtConstants.secret);
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: jwtSecret,
+        secret: jwtConstants.secret,
       });
-
+      console.log('📦 PAYLOAD décodé:', payload);
       const user = await this.userModel.findById(payload.sub);
+      console.log('👤 USER trouvé:', user);
       if (!user) throw new NotFoundException();
 
       request['user'] = payload;
-    } catch {
+      console.log('✅ req.user attaché:', request['user']);
+    } catch (e) {
+      console.error('❌ JWT ERROR:', e.message);
       throw new UnauthorizedException();
     }
-    return true;
-  }
-}
 
-@Injectable()
-export class ApiKeyGuard implements CanActivate {
-  canActivate(context: ExecutionContext): boolean {
-    const request: Request = context.switchToHttp().getRequest();
-    const apiKey = request.headers['x-api-key'];
-    if (apiKey && apiKey === process.env.MY_SECRET_API_KEY) {
-      return true;
-    }
-    throw new UnauthorizedException('Invalid API Key');
+    return true;
   }
 }
 
@@ -75,15 +60,9 @@ export class AdminGuard implements CanActivate {
 
     if (!token) throw new UnauthorizedException();
 
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if (!jwtSecret) {
-      throw new Error('JWT secret not found in environment variables');
-    }
-
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: jwtSecret,
+        secret: jwtConstants.secret,
       });
 
       const user = await this.userModel.findById(payload.sub);
@@ -113,15 +92,10 @@ export class RefreshToken implements CanActivate {
 
     if (!token) throw new UnauthorizedException();
 
-    const jwtSecret = process.env.JWT_SECRET;
-
-    if (!jwtSecret) {
-      throw new Error('JWT secret not found in environment variables');
-    }
-
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: jwtSecret,
+        secret: jwtConstants.secret,
+        ignoreExpiration: true,
       });
 
       request['user'] = payload;

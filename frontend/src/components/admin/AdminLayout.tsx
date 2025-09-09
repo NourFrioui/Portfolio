@@ -14,8 +14,10 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: '📊' },
     { name: 'Profile', href: '/admin/profile', icon: '👤' },
+    { name: 'Categories', href: '/admin/categories', icon: '🏷️' },
     { name: 'Projects', href: '/admin/projects', icon: '💼' },
     { name: 'Experience', href: '/admin/experience', icon: '🎯' },
+    { name: 'Tags', href: '/admin/tags', icon: '🏷️' },
     { name: 'Technologies', href: '/admin/technologies', icon: '⚡' },
     { name: 'Contacts', href: '/admin/contacts', icon: '📧' },
   ];

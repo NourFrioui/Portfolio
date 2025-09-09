@@ -7,6 +7,7 @@ interface ImageUploadProps {
   onImageUpload: (imageUrl: string) => void;
   label?: string;
   className?: string;
+  userId?: string;
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
@@ -16,6 +17,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   onImageUpload,
   label = "Upload Image",
   className = "",
+  userId,
 }) => {
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentImage || null);
@@ -49,8 +51,12 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      if (userId) {
+        formData.append("userId", userId);
+      }
 
-      const response = await fetch(`${API_BASE}/upload/image`, {
+      const endpoint = userId ? '/upload/profile-image' : '/upload/image';
+      const response = await fetch(`${API_BASE}${endpoint}`, {
         method: "POST",
         body: formData,
       });
@@ -60,8 +66,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       }
 
       const result = await response.json();
-      const imageUrl = `${API_BASE}${result.url}`;
-      onImageUpload(imageUrl);
+      onImageUpload(result.url);
     } catch (error) {
       console.error("Upload error:", error);
       alert("Failed to upload image. Please try again.");

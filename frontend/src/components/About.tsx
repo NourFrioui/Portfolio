@@ -1,52 +1,149 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { MapPin, Calendar, Award, Users } from "lucide-react";
+import api from "../utils/api";
+import ImageDisplay from "./ImageDisplay";
+import { isValidImageUrl, getImageUrl } from "../utils/imageUtils";
+
+interface UserProfile {
+  _id?: string;
+  fullName: string;
+  title: string;
+  bio: string;
+  description: string;
+  profileImageUrl?: string;
+  yearsOfExperience?: number;
+  skills?: string[];
+  location?: string;
+  email?: string;
+  experience?: string[];
+  languages?: string[];
+  education?: string[];
+  certifications?: string[];
+  interests?: string[];
+  username?: string;
+}
 
 const About: React.FC = () => {
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await api.get("/users/portfolio/public");
+        setUserProfile(response.data);
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        // Fallback data
+        setUserProfile({
+          fullName: "John Doe",
+          title: "Full Stack Developer",
+          bio: "Passionate developer with expertise in modern web technologies",
+          description: "I am a dedicated full-stack developer with a passion for creating innovative web solutions. With expertise in modern technologies and a commitment to clean, efficient code, I help businesses build robust digital experiences.",
+          yearsOfExperience: 5,
+          skills: [
+            "React & Next.js",
+            "Node.js & Express",
+            "TypeScript",
+            "MongoDB & PostgreSQL",
+          ],
+          location: "Your Location",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  if (loading) {
+    return (
+      <section id="about" className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
+      </section>
+    );
+  }
+
+  const skillColors = [
+    "bg-blue-100 text-blue-800",
+    "bg-green-100 text-green-800",
+    "bg-purple-100 text-purple-800",
+    "bg-orange-100 text-orange-800",
+    "bg-pink-100 text-pink-800",
+    "bg-indigo-100 text-indigo-800",
+  ];
+
   return (
     <section id="about" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            About Me
-          </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Passionate developer with expertise in modern web technologies
-          </p>
-        </div>
-
+        <h2 className="text-3xl font-bold text-center mb-12">About Me</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
+            {/* Bio - Short introduction */}
+            {userProfile?.bio && (
+              <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+                <span className="font-semibold">Experience:</span>
+                <p className="text-lg text-blue-900 font-medium italic">
+                  "{userProfile.bio}"
+                </p>
+              </div>
+            )}
+
+            {/* Description - Detailed about me */}
             <p className="text-lg text-gray-700 leading-relaxed">
-              I'm a passionate full-stack developer with over 5 years of experience 
-              creating digital solutions that make a difference. I specialize in 
-              modern web technologies and love turning complex problems into 
-              simple, beautiful designs.
+              {userProfile?.description || "I am a dedicated full-stack developer with a passion for creating innovative web solutions."}
             </p>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              When I'm not coding, you can find me exploring new technologies, 
-              contributing to open source projects, or sharing knowledge with 
-              the developer community.
-            </p>
+            {userProfile?.yearsOfExperience && (
+              <p className="text-lg text-gray-700 leading-relaxed">
+                With {userProfile.yearsOfExperience} years of experience, I continue to explore new
+                technologies, contribute to open source projects, and share
+                knowledge with the developer community.
+              </p>
+            )}
+            {userProfile?.location && (
+              <p className="text-lg text-gray-700 leading-relaxed">
+                Based in {userProfile.location}, I work with clients worldwide
+                to bring their digital visions to life.
+              </p>
+            )}
             <div className="flex flex-wrap gap-4">
-              <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-full text-sm font-medium">
-                React & Next.js
-              </div>
-              <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium">
-                Node.js & Express
-              </div>
-              <div className="bg-purple-100 text-purple-800 px-4 py-2 rounded-full text-sm font-medium">
-                TypeScript
-              </div>
-              <div className="bg-orange-100 text-orange-800 px-4 py-2 rounded-full text-sm font-medium">
-                MongoDB & PostgreSQL
-              </div>
+              {(
+                userProfile?.skills || [
+                  "React & Next.js",
+                  "Node.js & Express",
+                  "TypeScript",
+                  "MongoDB & PostgreSQL",
+                ]
+              ).map((skill, index) => (
+                <div
+                  key={skill}
+                  className={`${
+                    skillColors[index % skillColors.length]
+                  } px-4 py-2 rounded-full text-sm font-medium`}
+                >
+                  {skill}
+                </div>
+              ))}
             </div>
           </div>
           <div className="flex justify-center">
-            <div className="w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-6xl">
-              👨‍💻
-            </div>
+            {userProfile?.profileImageUrl ? (
+              <img
+                src={userProfile.profileImageUrl}
+                alt={userProfile?.fullName || "Profile"}
+                className="w-80 h-80 rounded-full object-cover border-4 border-blue-200"
+              />
+            ) : (
+              <div className="w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-6xl">
+                💻
+              </div>
+            )}
           </div>
         </div>
       </div>

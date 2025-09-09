@@ -18,30 +18,46 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Professional Portfolio - Full Stack Developer",
-  description: "Professional portfolio showcasing full-stack development expertise with modern technologies",
-  keywords: ["portfolio", "full-stack developer", "React", "Next.js", "Node.js", "TypeScript"],
+  description:
+    "Professional portfolio showcasing full-stack development expertise with modern technologies",
+  keywords: [
+    "portfolio",
+    "full-stack developer",
+    "React",
+    "Next.js",
+    "Node.js",
+    "TypeScript",
+  ],
   authors: [{ name: "Portfolio Owner" }],
-  viewport: "width=device-width, initial-scale=1",
   robots: "index, follow",
   openGraph: {
     type: "website",
     locale: "en_US",
     title: "Professional Portfolio - Full Stack Developer",
-    description: "Professional portfolio showcasing full-stack development expertise",
+    description:
+      "Professional portfolio showcasing full-stack development expertise",
     siteName: "Professional Portfolio",
   },
   twitter: {
     card: "summary_large_image",
     title: "Professional Portfolio - Full Stack Developer",
-    description: "Professional portfolio showcasing full-stack development expertise",
+    description:
+      "Professional portfolio showcasing full-stack development expertise",
   },
 };
 
+export function generateViewport() {
+  return {
+    width: "device-width",
+    initialScale: 1,
+  };
+}
+
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -61,8 +77,8 @@ export default function RootLayout({
                 toastOptions={{
                   duration: 4000,
                   style: {
-                    background: 'var(--toast-bg)',
-                    color: 'var(--toast-color)',
+                    background: "var(--toast-bg)",
+                    color: "var(--toast-color)",
                   },
                 }}
               />
@@ -73,4 +89,3 @@ export default function RootLayout({
     </html>
   );
 }
-

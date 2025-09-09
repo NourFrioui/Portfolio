@@ -6,6 +6,13 @@ import StatsCard from '@/components/admin/StatsCard';
 import QuickActions from '@/components/admin/QuickActions';
 import RecentActivity from '@/components/admin/RecentActivity';
 
+export function generateViewport() {
+  return {
+    width: 'device-width',
+    initialScale: 1,
+  }
+}
+
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
 type DashboardStats = {

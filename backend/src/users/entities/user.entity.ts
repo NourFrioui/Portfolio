@@ -9,19 +9,19 @@ export class User {
   @Prop({ type: Schema.Types.ObjectId, auto: true })
   _id: Schema.Types.ObjectId;
 
-  @Prop({ required: true })
-  firstName: string;
-
-  @Prop({ required: true })
+  @Prop({ required: false })
   lastName: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
+  firstName: string;
+
+  @Prop({ required: false })
   phone: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
   address: string;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: false, unique: true })
   username: string;
 
   @Prop({ required: true, unique: true })
@@ -56,6 +56,9 @@ export class User {
 
   @Prop()
   bio: string;
+
+  @Prop()
+  description: string;
 
   @Prop()
   linkedin: string;
@@ -110,7 +113,7 @@ export class User {
   location: string;
 
   @Prop()
-  profileImage: string;
+  profileImageUrl?: string;
 
   @Prop()
   resumeUrl: string;
@@ -126,6 +129,9 @@ export class User {
 
   @Prop({ type: [String], default: [] })
   languages: string[];
+
+  @Prop()
+  refreshToken: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
