@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from "react";
 import api from "@/utils/api";
 import { useTranslations } from "../hooks/useTranslations";
+import Card from "./ui/Card";
+import Badge from "./ui/Badge";
+import Button from "./ui/Button";
 
 interface Technology {
   _id: string;
@@ -10,6 +13,9 @@ interface Technology {
   category: string;
   percentage: number;
   iconUrl?: string;
+  level?: "beginner" | "intermediate" | "advanced" | "expert";
+  yearsOfExperience?: number;
+  description?: string;
 }
 
 const Skills: React.FC = () => {
@@ -27,19 +33,78 @@ const Skills: React.FC = () => {
         console.error("Error fetching technologies:", error);
         // Fallback data
         setTechnologies([
-          { _id: "1", name: "React", category: "Frontend", percentage: 90 },
-          { _id: "2", name: "Next.js", category: "Frontend", percentage: 85 },
+          { 
+            _id: "1", 
+            name: "React", 
+            category: "Frontend", 
+            percentage: 90, 
+            level: "expert",
+            yearsOfExperience: 4,
+            description: "Advanced React patterns, hooks, context, performance optimization"
+          },
+          { 
+            _id: "2", 
+            name: "Next.js", 
+            category: "Frontend", 
+            percentage: 85,
+            level: "advanced",
+            yearsOfExperience: 3,
+            description: "SSR, SSG, API routes, deployment optimization"
+          },
           {
             _id: "3",
             name: "TypeScript",
             category: "Frontend",
             percentage: 80,
+            level: "advanced",
+            yearsOfExperience: 3,
+            description: "Type safety, generics, advanced patterns"
           },
-          { _id: "4", name: "Node.js", category: "Backend", percentage: 85 },
-          { _id: "5", name: "Express", category: "Backend", percentage: 80 },
-          { _id: "6", name: "MongoDB", category: "Database", percentage: 75 },
-          { _id: "7", name: "Git", category: "Tools", percentage: 90 },
-          { _id: "8", name: "Docker", category: "Tools", percentage: 70 },
+          { 
+            _id: "4", 
+            name: "Node.js", 
+            category: "Backend", 
+            percentage: 85,
+            level: "advanced",
+            yearsOfExperience: 4,
+            description: "RESTful APIs, microservices, performance tuning"
+          },
+          { 
+            _id: "5", 
+            name: "Express", 
+            category: "Backend", 
+            percentage: 80,
+            level: "advanced",
+            yearsOfExperience: 3,
+            description: "Middleware, authentication, API design"
+          },
+          { 
+            _id: "6", 
+            name: "MongoDB", 
+            category: "Database", 
+            percentage: 75,
+            level: "intermediate",
+            yearsOfExperience: 2,
+            description: "Schema design, aggregation, indexing"
+          },
+          { 
+            _id: "7", 
+            name: "Git", 
+            category: "Tools", 
+            percentage: 90,
+            level: "expert",
+            yearsOfExperience: 5,
+            description: "Version control, branching strategies, CI/CD"
+          },
+          { 
+            _id: "8", 
+            name: "Docker", 
+            category: "Tools", 
+            percentage: 70,
+            level: "intermediate",
+            yearsOfExperience: 2,
+            description: "Containerization, multi-stage builds, orchestration"
+          },
         ]);
       } finally {
         setLoading(false);
@@ -52,14 +117,59 @@ const Skills: React.FC = () => {
   // Create category mapping for translations
   const getCategoryTranslation = (category: string) => {
     const categoryMap: { [key: string]: string } = {
-      "All": t("Skills.all"),
-      "Frontend": t("Skills.frontend"),
-      "Backend": t("Skills.backend"),
-      "Database": t("Skills.database"),
-      "Tools": t("Skills.tools"),
-      "Design": t("Skills.design"),
+      "All": t("Skills.all") || "All",
+      "Frontend": t("Skills.frontend") || "Frontend",
+      "Backend": t("Skills.backend") || "Backend",
+      "Database": t("Skills.database") || "Database",
+      "Tools": t("Skills.tools") || "Tools",
+      "Design": t("Skills.design") || "Design",
     };
     return categoryMap[category] || category;
+  };
+
+  const getLevelColor = (level?: string) => {
+    switch (level) {
+      case "expert": return "success";
+      case "advanced": return "primary";
+      case "intermediate": return "warning";
+      case "beginner": return "secondary";
+      default: return "default";
+    }
+  };
+
+  const getLevelLabel = (level?: string) => {
+    switch (level) {
+      case "expert": return "Expert";
+      case "advanced": return "Advanced";
+      case "intermediate": return "Intermediate";
+      case "beginner": return "Beginner";
+      default: return level;
+    }
+  };
+
+  const getTechIcon = (name: string) => {
+    const icons: { [key: string]: string } = {
+      "React": "⚛️",
+      "Next.js": "▲",
+      "TypeScript": "🔷",
+      "Node.js": "🟢",
+      "Express": "🚂",
+      "MongoDB": "🍃",
+      "Git": "📝",
+      "Docker": "🐳",
+      "JavaScript": "💛",
+      "Python": "🐍",
+      "Vue.js": "💚",
+      "Angular": "🔺",
+      "PostgreSQL": "🐘",
+      "MySQL": "🐬",
+      "Redis": "🔴",
+      "AWS": "☁️",
+      "Firebase": "🔥",
+      "Figma": "🎨",
+      "Photoshop": "🖼️"
+    };
+    return icons[name] || "💻";
   };
 
   const categories = [
@@ -84,55 +194,90 @@ const Skills: React.FC = () => {
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex flex-wrap justify-center gap-4 mb-12">
+        <div className="flex flex-wrap justify-center gap-3 mb-12">
           {categories.map((category) => (
-            <button
+            <Button
               key={category}
+              variant={activeFilter === category ? "primary" : "ghost"}
+              size="sm"
               onClick={() => setActiveFilter(category)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeFilter === category
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-gray-700 hover:bg-blue-50 border border-gray-200"
-              }`}
             >
-              {getCategoryTranslation(category)}
-            </button>
+              {getCategoryTranslation(category)} ({category === "All" ? technologies.length : technologies.filter(t => t.category === category).length})
+            </Button>
           ))}
         </div>
 
         {loading ? (
           <div className="flex justify-center items-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
-            <p className="ml-4 text-gray-600">{t("Skills.loading")}</p>
+            <p className="ml-4 text-gray-600">{t("Skills.loading") || "Loading skills..."}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredTechnologies.map((tech) => (
-              <div
+              <Card
                 key={tech._id}
-                className="bg-white rounded-lg p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+                className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
               >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900">
-                    {tech.name}
-                  </h3>
-                  <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {getCategoryTranslation(tech.category)}
-                  </span>
-                </div>
-                <div className="mb-2">
-                  <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>{t("Skills.proficiency")}</span>
-                    <span>{tech.percentage}%</span>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="text-2xl">{getTechIcon(tech.name)}</div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {tech.name}
+                      </h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="secondary" size="sm">
+                          {getCategoryTranslation(tech.category)}
+                        </Badge>
+                        {tech.level && (
+                          <Badge variant={getLevelColor(tech.level) as any} size="sm">
+                            {getLevelLabel(tech.level)}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  
+                  {tech.yearsOfExperience && (
+                    <div className="text-right">
+                      <div className="text-sm font-medium text-gray-900">{tech.yearsOfExperience}+</div>
+                      <div className="text-xs text-gray-500">years</div>
+                    </div>
+                  )}
+                </div>
+
+                {tech.description && (
+                  <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                    {tech.description}
+                  </p>
+                )}
+
+                <div className="mb-2">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>{t("Skills.proficiency") || "Proficiency"}</span>
+                    <span className="font-medium">{tech.percentage}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-1000"
+                      className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                        tech.percentage >= 90 ? 'bg-gradient-to-r from-green-500 to-emerald-500' :
+                        tech.percentage >= 75 ? 'bg-gradient-to-r from-blue-500 to-cyan-500' :
+                        tech.percentage >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-500' :
+                        'bg-gradient-to-r from-gray-400 to-gray-500'
+                      }`}
                       style={{ width: `${tech.percentage}%` }}
                     ></div>
                   </div>
                 </div>
-              </div>
+
+                {/* Tooltip on hover */}
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 mt-2">
+                  <div className="text-xs text-gray-500 text-center">
+                    Click to see projects using {tech.name}
+                  </div>
+                </div>
+              </Card>
             ))}
           </div>
         )}

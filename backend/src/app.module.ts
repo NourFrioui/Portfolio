@@ -11,6 +11,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { ExperienceModule } from './experience/experience.module';
 import { CategoryModule } from './category/category.module';
 import { TagsModule } from './tags/tags.module';
+import { StudiesModule } from './studies/studies.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TagsModule } from './tags/tags.module';
     ExperienceModule,
     CategoryModule,
     TagsModule,
+    StudiesModule,
   ],
   controllers: [],
   providers: [],

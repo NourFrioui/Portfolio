@@ -25,6 +25,9 @@ interface UserProfile {
   certifications?: string[];
   interests?: string[];
   username?: string;
+  resumeUrl?: string;
+  availableForWork?: boolean;
+  hourlyRate?: number;
 }
 
 const About: React.FC = () => {
@@ -54,6 +57,8 @@ const About: React.FC = () => {
             "MongoDB & PostgreSQL",
           ],
           location: "Your Location",
+          resumeUrl: "/upload/pdfs/sample.pdf",
+          availableForWork: true,
         });
       } finally {
         setLoading(false);
@@ -85,13 +90,17 @@ const About: React.FC = () => {
   return (
     <section id="about" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-center mb-12">{t("About.title")}</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">
+          {t("About.title")}
+        </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             {/* Bio - Short introduction */}
             {userProfile?.bio && (
               <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
-                <span className="font-semibold">{t("About.experienceLabel")}</span>
+                <span className="font-semibold">
+                  {t("About.experienceLabel")}
+                </span>
                 <p className="text-lg text-blue-900 font-medium italic">
                   "{userProfile.bio}"
                 </p>
@@ -104,14 +113,42 @@ const About: React.FC = () => {
             </p>
             {userProfile?.yearsOfExperience && (
               <p className="text-lg text-gray-700 leading-relaxed">
-                {t("About.experienceText").replace("{years}", userProfile.yearsOfExperience.toString())}
+                {t("About.experienceText").replace(
+                  "{years}",
+                  userProfile.yearsOfExperience.toString()
+                )}
               </p>
             )}
             {userProfile?.location && (
               <p className="text-lg text-gray-700 leading-relaxed">
-                {t("About.locationText").replace("{location}", userProfile.location)}
+                {t("About.locationText").replace(
+                  "{location}",
+                  userProfile.location
+                )}
               </p>
             )}
+            {/* Quick facts & Availability */}
+            <div className="flex flex-wrap gap-3">
+              {userProfile?.availableForWork && (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                  ✅ {t("About.available", { default: "Available for work" })}
+                </span>
+              )}
+              {typeof userProfile?.hourlyRate === "number" && (
+                <span className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                  💼 {userProfile.hourlyRate} €/h
+                </span>
+              )}
+              {userProfile?.email && (
+                <a
+                  href={`mailto:${userProfile.email}`}
+                  className="px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-800"
+                >
+                  ✉️ {userProfile.email}
+                </a>
+              )}
+            </div>
+
             <div className="flex flex-wrap gap-4">
               {(
                 userProfile?.skills || [
@@ -130,6 +167,23 @@ const About: React.FC = () => {
                   {skill}
                 </div>
               ))}
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <a href="#contact" className="btn btn-primary">
+                {t("Contact.cta", { default: "Contact me" })}
+              </a>
+              {userProfile?.resumeUrl && (
+                <a
+                  href={userProfile.resumeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary"
+                >
+                  {t("About.downloadCV", { default: "Download CV (PDF)" })}
+                </a>
+              )}
             </div>
           </div>
           <div className="flex justify-center">
