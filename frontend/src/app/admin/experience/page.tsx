@@ -25,6 +25,7 @@ type Experience = {
   isCurrentJob?: boolean;
   companyLogo?: string;
   highlights?: string[];
+  projectIds?: string[];
 };
 
 export default function AdminExperiencePage() {
@@ -48,6 +49,7 @@ export default function AdminExperiencePage() {
   const [tagInput, setTagInput] = useState("");
   const [allTechnologies, setAllTechnologies] = useState<string[]>([]);
   const [techInput, setTechInput] = useState("");
+  const [allProjects, setAllProjects] = useState<{ _id: string; title: string }[]>([]);
 
   const buildAbsoluteUrl = (raw?: string | null) => {
     const u = (raw || '').trim();
@@ -56,6 +58,17 @@ export default function AdminExperiencePage() {
     if (u.startsWith('/')) return `${API_BASE}${u}`;
     if (u.includes('uploads/')) return `${API_BASE}/${u}`;
     return `${API_BASE}/upload/${u}`;
+  };
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch(`${API_BASE}/projects`);
+      const data = await res.json();
+      const items = (data || []).map((p: any) => ({ _id: p._id, title: p.title })).filter((p: any) => p._id && p.title);
+      setAllProjects(items);
+    } catch (e) {
+      console.error("Error fetching projects:", e);
+    }
   };
 
   const token =
@@ -97,6 +110,7 @@ export default function AdminExperiencePage() {
     fetchExperiences();
     fetchTags();
     fetchTechnologies();
+    fetchProjects();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,6 +136,7 @@ export default function AdminExperiencePage() {
         isCurrentJob: formData.isCurrentJob || false,
         companyLogo: formData.companyLogo ? buildAbsoluteUrl(formData.companyLogo) : undefined,
         highlights: formData.highlights || [],
+        projectIds: formData.projectIds || [],
       };
 
       const res = await fetch(url, {
@@ -157,6 +172,7 @@ export default function AdminExperiencePage() {
       isCurrentJob: false,
       companyLogo: "",
       highlights: [],
+      projectIds: [],
     });
     setEditingExperience(null);
   };
@@ -520,6 +536,32 @@ export default function AdminExperiencePage() {
                               className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
                             >
                               {tag}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Related Projects multi-select */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Related Projects</label>
+                    {allProjects.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2 border border-slate-300 rounded-lg p-3">
+                        {allProjects.map((p) => {
+                          const selected = (formData.projectIds || []).includes(p._id);
+                          return (
+                            <button
+                              type="button"
+                              key={p._id}
+                              onClick={() => {
+                                const set = new Set(formData.projectIds || []);
+                                if (set.has(p._id)) set.delete(p._id); else set.add(p._id);
+                                setFormData({ ...formData, projectIds: Array.from(set) });
+                              }}
+                              className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                            >
+                              {p.title}
                             </button>
                           );
                         })}

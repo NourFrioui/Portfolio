@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import api from "@/utils/api";
 import { toast } from "react-hot-toast";
+import { useTranslations } from "../hooks/useTranslations";
 
 interface UserProfile {
   email?: string;
@@ -25,6 +26,7 @@ const Contact: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const t = useTranslations();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -59,11 +61,11 @@ const Contact: React.FC = () => {
 
     try {
       await api.post("/contact", formData);
-      toast.success("Message sent successfully!");
+      toast.success(t("Contact.success"));
       setFormData({ name: "", email: "", subject: "", message: "" });
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error("Failed to send message. Please try again.");
+      toast.error(t("Contact.error"));
     } finally {
       setSubmitting(false);
     }
@@ -83,10 +85,10 @@ const Contact: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            Get In Touch
+            {t("Contact.title")}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Let's discuss your next project
+            {t("Contact.discussProject")}
           </p>
         </div>
 
@@ -94,9 +96,9 @@ const Contact: React.FC = () => {
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Contact Information
+                {t("Contact.contactInfo")}
               </h3>
-              <p className="text-gray-600 mb-8">Feel free to reach out through any of these channels</p>
+              <p className="text-gray-600 mb-8">{t("Contact.reachOut")}</p>
             </div>
 
             {loading ? (
@@ -189,7 +191,7 @@ const Contact: React.FC = () => {
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Your Name
+                  {t("Contact.name")}
                 </label>
                 <input
                   type="text"
@@ -198,7 +200,7 @@ const Contact: React.FC = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Your Name"
+                  placeholder={t("Contact.yourName")}
                   required
                 />
               </div>
@@ -208,7 +210,7 @@ const Contact: React.FC = () => {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Your Email
+                  {t("Contact.email")}
                 </label>
                 <input
                   type="email"
@@ -217,7 +219,7 @@ const Contact: React.FC = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Your Email"
+                  placeholder={t("Contact.yourEmail")}
                   required
                 />
               </div>
@@ -227,7 +229,7 @@ const Contact: React.FC = () => {
                   htmlFor="subject"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Subject
+                  {t("Contact.subject")}
                 </label>
                 <input
                   type="text"
@@ -236,7 +238,7 @@ const Contact: React.FC = () => {
                   value={formData.subject}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Subject"
+                  placeholder={t("Contact.subject")}
                   required
                 />
               </div>
@@ -246,7 +248,7 @@ const Contact: React.FC = () => {
                   htmlFor="message"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
-                  Your Message
+                  {t("Contact.message")}
                 </label>
                 <textarea
                   id="message"
@@ -255,7 +257,7 @@ const Contact: React.FC = () => {
                   value={formData.message}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Your Message"
+                  placeholder={t("Contact.yourMessage")}
                   required
                 />
               </div>
@@ -268,10 +270,10 @@ const Contact: React.FC = () => {
                 {submitting ? (
                   <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Sending...
+                    {t("Contact.sending")}
                   </div>
                 ) : (
-                  "Send Message"
+                  t("Contact.send")
                 )}
               </button>
             </div>

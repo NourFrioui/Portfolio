@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { useTranslations } from "@/hooks/useTranslations";
 import {
   ArrowLeftIcon,
   ArrowTopRightOnSquareIcon,
@@ -41,6 +43,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000";
 
 export default function ProjectDetailsPage() {
   const params = useParams();
+  const t = useTranslations();
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -70,7 +73,10 @@ export default function ProjectDetailsPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">{t('Projects.details.loading')}</p>
+        </div>
       </div>
     );
   }
@@ -79,14 +85,14 @@ export default function ProjectDetailsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Project Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('Projects.details.error')}</h1>
           <p className="text-gray-600 mb-8">{error}</p>
           <Link
-            href="/projects"
+            href="/"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
-            Back to Projects
+            {t('Projects.details.back')}
           </Link>
         </div>
       </div>
@@ -105,7 +111,7 @@ export default function ProjectDetailsPage() {
             className="inline-flex items-center text-blue-600 hover:text-blue-700 transition-colors mb-4"
           >
             <ArrowLeftIcon className="w-5 h-5 mr-2" />
-            Back to Portfolio
+            {t('Projects.details.back')}
           </Link>
           
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
@@ -123,7 +129,7 @@ export default function ProjectDetailsPage() {
                   className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                   <ArrowTopRightOnSquareIcon className="w-5 h-5 mr-2" />
-                  Live Demo
+                  {t('Projects.liveDemo')}
                 </a>
               )}
               
@@ -135,7 +141,7 @@ export default function ProjectDetailsPage() {
                   className="inline-flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <CodeBracketIcon className="w-5 h-5 mr-2" />
-                  View Code
+                  {t('Projects.sourceCode')}
                 </a>
               )}
             </div>
@@ -199,7 +205,7 @@ export default function ProjectDetailsPage() {
                 transition={{ delay: 0.1 }}
                 className="bg-white rounded-xl shadow-lg p-8"
               >
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">About This Project</h2>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">{t('Projects.details.overview')}</h2>
                 <div className="prose prose-gray max-w-none">
                   <p className="text-gray-700 leading-relaxed">{project.detailedDescription}</p>
                 </div>
@@ -216,7 +222,7 @@ export default function ProjectDetailsPage() {
               >
                 <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                   <CheckCircleIcon className="w-6 h-6 mr-3 text-green-600" />
-                  Key Features
+                  {t('Projects.details.features')}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {project.features.map((feature, index) => (
@@ -243,7 +249,7 @@ export default function ProjectDetailsPage() {
                     <div>
                       <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                         <ExclamationTriangleIcon className="w-5 h-5 mr-2 text-orange-600" />
-                        Challenges
+                        {t('Projects.details.challenges')}
                       </h3>
                       <ul className="space-y-3">
                         {project.challenges.map((challenge, index) => (
@@ -260,7 +266,7 @@ export default function ProjectDetailsPage() {
                     <div>
                       <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
                         <LightBulbIcon className="w-5 h-5 mr-2 text-yellow-600" />
-                        Solutions
+                        {t('Projects.details.solutions')}
                       </h3>
                       <ul className="space-y-3">
                         {project.solutions.map((solution, index) => (
@@ -285,17 +291,17 @@ export default function ProjectDetailsPage() {
               animate={{ opacity: 1, x: 0 }}
               className="bg-white rounded-xl shadow-lg p-6"
             >
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Project Info</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t('Projects.details.overview')}</h3>
               
               <div className="space-y-4">
                 <div className="flex items-center text-sm text-gray-600">
                   <CalendarIcon className="w-4 h-4 mr-2" />
-                  Created: {new Date(project.createdAt).toLocaleDateString()}
+                  {new Date(project.createdAt).toLocaleDateString()}
                 </div>
                 
                 <div className="flex items-center text-sm text-gray-600">
                   <TagIcon className="w-4 h-4 mr-2" />
-                  Status: <span className="ml-1 capitalize font-medium">{project.status}</span>
+                  {t(`Projects.${project.status.toLowerCase()}`)}
                 </div>
               </div>
             </motion.div>
@@ -308,7 +314,7 @@ export default function ProjectDetailsPage() {
                 transition={{ delay: 0.1 }}
                 className="bg-white rounded-xl shadow-lg p-6"
               >
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Technologies Used</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('Projects.technologies')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {project.technologies.map((tech, index) => (
                     <span
@@ -330,7 +336,7 @@ export default function ProjectDetailsPage() {
                 transition={{ delay: 0.15 }}
                 className="bg-white rounded-xl shadow-lg p-6"
               >
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Tags</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">{t('Projects.details.tags')}</h3>
                 <div className="flex flex-wrap gap-2">
                   {project.tags.map((tag, index) => (
                     <span
@@ -351,7 +357,7 @@ export default function ProjectDetailsPage() {
               transition={{ delay: 0.2 }}
               className="bg-white rounded-xl shadow-lg p-6"
             >
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Links</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">{t('Projects.details.links')}</h3>
               <div className="space-y-3">
                 {project.projectUrl && (
                   <a
@@ -361,7 +367,7 @@ export default function ProjectDetailsPage() {
                     className="flex items-center text-blue-600 hover:text-blue-700 transition-colors"
                   >
                     <ArrowTopRightOnSquareIcon className="w-4 h-4 mr-2" />
-                    Live Demo
+                    {t('Projects.liveDemo')}
                   </a>
                 )}
                 
@@ -373,7 +379,7 @@ export default function ProjectDetailsPage() {
                     className="flex items-center text-gray-600 hover:text-gray-700 transition-colors"
                   >
                     <CodeBracketIcon className="w-4 h-4 mr-2" />
-                    Source Code
+                    {t('Projects.sourceCode')}
                   </a>
                 )}
               </div>

@@ -6,6 +6,7 @@ import { MapPin, Calendar, Award, Users } from "lucide-react";
 import api from "../utils/api";
 import ImageDisplay from "./ImageDisplay";
 import { isValidImageUrl, getImageUrl } from "../utils/imageUtils";
+import { useTranslations } from "../hooks/useTranslations";
 
 interface UserProfile {
   _id?: string;
@@ -29,6 +30,7 @@ interface UserProfile {
 const About: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations();
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -42,7 +44,8 @@ const About: React.FC = () => {
           fullName: "John Doe",
           title: "Full Stack Developer",
           bio: "Passionate developer with expertise in modern web technologies",
-          description: "I am a dedicated full-stack developer with a passion for creating innovative web solutions. With expertise in modern technologies and a commitment to clean, efficient code, I help businesses build robust digital experiences.",
+          description:
+            "I am a dedicated full-stack developer with a passion for creating innovative web solutions. With expertise in modern technologies and a commitment to clean, efficient code, I help businesses build robust digital experiences.",
           yearsOfExperience: 5,
           skills: [
             "React & Next.js",
@@ -82,13 +85,13 @@ const About: React.FC = () => {
   return (
     <section id="about" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-center mb-12">About Me</h2>
+        <h2 className="text-3xl font-bold text-center mb-12">{t("About.title")}</h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             {/* Bio - Short introduction */}
             {userProfile?.bio && (
               <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
-                <span className="font-semibold">Experience:</span>
+                <span className="font-semibold">{t("About.experienceLabel")}</span>
                 <p className="text-lg text-blue-900 font-medium italic">
                   "{userProfile.bio}"
                 </p>
@@ -97,19 +100,16 @@ const About: React.FC = () => {
 
             {/* Description - Detailed about me */}
             <p className="text-lg text-gray-700 leading-relaxed">
-              {userProfile?.description || "I am a dedicated full-stack developer with a passion for creating innovative web solutions."}
+              {userProfile?.description || t("About.fallbackDescription")}
             </p>
             {userProfile?.yearsOfExperience && (
               <p className="text-lg text-gray-700 leading-relaxed">
-                With {userProfile.yearsOfExperience} years of experience, I continue to explore new
-                technologies, contribute to open source projects, and share
-                knowledge with the developer community.
+                {t("About.experienceText").replace("{years}", userProfile.yearsOfExperience.toString())}
               </p>
             )}
             {userProfile?.location && (
               <p className="text-lg text-gray-700 leading-relaxed">
-                Based in {userProfile.location}, I work with clients worldwide
-                to bring their digital visions to life.
+                {t("About.locationText").replace("{location}", userProfile.location)}
               </p>
             )}
             <div className="flex flex-wrap gap-4">

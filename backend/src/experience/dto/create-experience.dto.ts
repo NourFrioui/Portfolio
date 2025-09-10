@@ -63,6 +63,15 @@ export class CreateExperienceDto {
   @IsString({ each: true })
   tags?: string[];
 
+  @ApiPropertyOptional({
+    description: 'Related project IDs',
+    example: ['68b8716f55803e5ef8ad898a', '68c04b8e4cb0d1be7f09cad3'],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  projectIds?: string[];
+
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()

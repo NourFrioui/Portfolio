@@ -12,17 +12,13 @@ const nextConfig = {
         port: '3000',
         pathname: '/upload/**',
       },
-      {
-        protocol: 'https',
-        hostname: '**',
-      },
     ],
   },
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/:path*`,
+        destination: 'http://localhost:3000/:path*',
       },
     ];
   },

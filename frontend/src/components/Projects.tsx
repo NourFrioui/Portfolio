@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import api from "@/utils/api";
+import { useTranslations } from "../hooks/useTranslations";
 
 interface Project {
   _id: string;
@@ -21,6 +22,7 @@ interface Project {
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -78,9 +80,13 @@ const Projects: React.FC = () => {
   const getStatusTranslation = (status: string) => {
     switch (status) {
       case "completed":
-        return "Terminé";
+        return t("Projects.completed");
       case "in-progress":
-        return "En cours";
+        return t("Projects.inProgress");
+      case "planning":
+        return t("Projects.planning");
+      case "on-hold":
+        return t("Projects.onHold");
       default:
         return status;
     }
@@ -91,16 +97,17 @@ const Projects: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Featured Projects
+            {t("Projects.featuredTitle")}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            A selection of work that showcases my skills and experience
+            {t("Projects.featuredSubtitle")}
           </p>
         </div>
 
         {loading ? (
-          <div className="flex justify-center">
+          <div className="flex justify-center items-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+            <p className="ml-4 text-gray-600">{t("Projects.loading")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -161,13 +168,13 @@ const Projects: React.FC = () => {
                   )}
                   <div className="mb-4">
                     <Link href={`/projects/${project._id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                      View details →
+                      {t("Projects.viewDetails")}
                     </Link>
                   </div>
                   {project.technologies && project.technologies.length > 0 && (
                     <div className="flex flex-wrap gap-2 mb-4">
                       <span className="text-sm text-gray-700 font-medium">
-                        Technologies:
+                        {t("Projects.technologies")}
                       </span>
                       {project.technologies.map((tech, techIndex) => (
                         <span
@@ -187,7 +194,7 @@ const Projects: React.FC = () => {
                         rel="noopener noreferrer"
                         className="text-blue-600 hover:text-blue-800 text-sm font-medium"
                       >
-                        Live Demo →
+                        {t("Projects.liveDemo")}
                       </a>
                     )}
                     {project.githubUrl && project.githubUrl !== "#" && (
@@ -197,7 +204,7 @@ const Projects: React.FC = () => {
                         rel="noopener noreferrer"
                         className="text-gray-600 hover:text-gray-800 text-sm font-medium"
                       >
-                        Source Code →
+                        {t("Projects.sourceCode")}
                       </a>
                     )}
                   </div>

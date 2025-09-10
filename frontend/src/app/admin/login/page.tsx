@@ -127,8 +127,8 @@ export default function AdminLoginPage() {
         <div className="mt-6 p-4 bg-slate-100 rounded-xl">
           <h3 className="text-sm font-medium text-slate-700 mb-2">Demo Credentials:</h3>
           <div className="text-xs text-slate-600 space-y-1">
-            <div>Email: <code className="bg-white px-2 py-1 rounded">admin</code></div>
-            <div>Password: <code className="bg-white px-2 py-1 rounded">password</code></div>
+            <div>Email: <code className="bg-white px-2 py-1 rounded">email</code></div>
+            <div>Password: <code className="bg-white px-2 py-1 rounded">GeAE2^Zr</code></div>
           </div>
         </div>
       </div>

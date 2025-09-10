@@ -1,86 +1,118 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useTranslations } from '@/hooks/useTranslations';
 import api from "@/utils/api";
 
-interface UserProfile {
-  fullName: string;
-  title: string;
-  bio: string;
+interface UserData {
+  fullName?: string;
+  title?: string;
+  bio?: string;
   profileImage?: string;
+  resumeUrl?: string;
 }
 
 const Hero: React.FC = () => {
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const t = useTranslations("Hero");
+  const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
+
+  const buildAbsoluteUrl = (raw?: string | null) => {
+    const u = (raw || "").trim();
+    if (!u) return "";
+    if (u.startsWith("http://") || u.startsWith("https://")) return u;
+    if (u.startsWith("/")) return `${API_BASE}${u}`;
+    if (u.includes("uploads/")) return `${API_BASE}/${u}`;
+    return `${API_BASE}/upload/${u}`;
+  };
+
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserData = async () => {
       try {
         const response = await api.get("/users/portfolio/public");
-        setUserProfile(response.data);
+        setUserData(response.data);
       } catch (error) {
-        console.error("Error fetching user profile:", error);
+        console.error("Error fetching user data:", error);
         // Fallback data
-        setUserProfile({
-          fullName: "Your Name",
+        setUserData({
+          fullName: "John Doe",
           title: "Full Stack Developer",
-          bio: "I build modern, scalable web applications with great user experiences.",
+          bio: "I create modern web applications with cutting-edge technologies",
         });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUserProfile();
+    fetchUserData();
   }, []);
 
   if (loading) {
     return (
       <section
-        id="home"
-        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 pt-16"
+        id="hero"
+        className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100"
       >
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </section>
     );
   }
 
   return (
     <section
-      id="home"
-      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 pt-16"
+      id="hero"
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4 sm:px-6 lg:px-8"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="space-y-8">
-          <div className="space-y-4">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900">
-              Hello, I'm {" "}
-              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                {userProfile?.fullName || "Your Name"}
-              </span>
-            </h1>
-            <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
-              {userProfile?.title || "Full Stack Developer"}
-            </p>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto">
-              {userProfile?.bio || "I build modern, scalable web applications with great user experiences."}
-            </p>
-          </div>
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center">
+          {userData?.profileImage && (
+            <div className="mb-8">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={buildAbsoluteUrl(userData.profileImage)}
+                alt={userData.fullName || "Profile"}
+                className="w-32 h-32 rounded-full mx-auto object-cover border-4 border-white shadow-lg"
+              />
+            </div>
+          )}
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            <span className="text-blue-600">{t("greeting")}</span>
+            <br />
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              {userData?.fullName || "John Doe"}
+            </span>
+          </h1>
+
+          <h2 className="text-xl md:text-2xl text-gray-700 mb-6 font-medium">
+            {userData?.title || t("title")}
+          </h2>
+
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            {userData?.bio || t("subtitle")}
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link
               href="#contact"
-              className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
             >
-              Contact Me
-            </a>
-            <a
-              href="#projects"
-              className="inline-flex items-center px-8 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition-colors"
-            >
-              View My Work
-            </a>
+              {t("cta")}
+            </Link>
+
+            {userData?.resumeUrl && (
+              <a
+                href={buildAbsoluteUrl(userData.resumeUrl)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-8 py-3 rounded-lg font-medium transition-all duration-200 hover:shadow-lg transform hover:-translate-y-0.5"
+              >
+                {t("downloadCV")}
+              </a>
+            )}
           </div>
         </div>
       </div>

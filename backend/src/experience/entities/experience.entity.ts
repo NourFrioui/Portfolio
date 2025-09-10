@@ -68,6 +68,14 @@ export class Experience {
   highlights?: string[];
 
   @ApiProperty({
+    description: 'Related project IDs',
+    example: ['68b8716f55803e5ef8ad898a', '68c04b8e4cb0d1be7f09cad3'],
+    required: false,
+  })
+  @Prop({ type: [Types.ObjectId], ref: 'Project', default: [] })
+  projectIds?: Types.ObjectId[];
+
+  @ApiProperty({
     description: 'Tags related to this experience',
     example: ['leadership', 'remote', 'fulltime'],
     required: false,

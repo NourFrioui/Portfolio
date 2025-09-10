@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import api from "@/utils/api";
+import { useTranslations } from "../hooks/useTranslations";
 
 interface Technology {
   _id: string;
@@ -15,6 +16,7 @@ const Skills: React.FC = () => {
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState("All");
+  const t = useTranslations();
 
   useEffect(() => {
     const fetchTechnologies = async () => {
@@ -47,6 +49,19 @@ const Skills: React.FC = () => {
     fetchTechnologies();
   }, []);
 
+  // Create category mapping for translations
+  const getCategoryTranslation = (category: string) => {
+    const categoryMap: { [key: string]: string } = {
+      "All": t("Skills.all"),
+      "Frontend": t("Skills.frontend"),
+      "Backend": t("Skills.backend"),
+      "Database": t("Skills.database"),
+      "Tools": t("Skills.tools"),
+      "Design": t("Skills.design"),
+    };
+    return categoryMap[category] || category;
+  };
+
   const categories = [
     "All",
     ...Array.from(new Set(technologies.map((tech) => tech.category))),
@@ -61,10 +76,10 @@ const Skills: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Skills
+            {t("Skills.title")}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Technologies and tools I work with
+            {t("Skills.subtitle")}
           </p>
         </div>
 
@@ -80,14 +95,15 @@ const Skills: React.FC = () => {
                   : "bg-white text-gray-700 hover:bg-blue-50 border border-gray-200"
               }`}
             >
-              {category}
+              {getCategoryTranslation(category)}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="flex justify-center">
+          <div className="flex justify-center items-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+            <p className="ml-4 text-gray-600">{t("Skills.loading")}</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -101,12 +117,12 @@ const Skills: React.FC = () => {
                     {tech.name}
                   </h3>
                   <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                    {tech.category}
+                    {getCategoryTranslation(tech.category)}
                   </span>
                 </div>
                 <div className="mb-2">
                   <div className="flex justify-between text-sm text-gray-600 mb-1">
-                    <span>Proficiency</span>
+                    <span>{t("Skills.proficiency")}</span>
                     <span>{tech.percentage}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
