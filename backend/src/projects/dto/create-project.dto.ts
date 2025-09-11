@@ -21,6 +21,11 @@ export class CreateProjectDto {
   @IsString()
   description: string;
 
+  @ApiPropertyOptional({ description: 'Long description' })
+  @IsOptional()
+  @IsString()
+  longDescription?: string;
+
   @ApiPropertyOptional({
     description: 'Detailed project description',
     example: 'This project includes user authentication, payment processing...',
@@ -43,6 +48,11 @@ export class CreateProjectDto {
   })
   @IsOptional()
   imageUrl?: string;
+
+  @ApiPropertyOptional({ description: 'Live URL' })
+  @IsOptional()
+  @IsUrl({ require_protocol: false })
+  liveUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Additional project images',
@@ -149,4 +159,86 @@ export class CreateProjectDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiPropertyOptional({ description: 'Start date' })
+  @IsOptional()
+  @IsString()
+  startDate?: string;
+
+  @ApiPropertyOptional({ description: 'End date' })
+  @IsOptional()
+  @IsString()
+  endDate?: string;
+
+  @ApiPropertyOptional({ description: 'Team size' })
+  @IsOptional()
+  @IsNumber()
+  teamSize?: number;
+
+  @ApiPropertyOptional({ description: 'Team role' })
+  @IsOptional()
+  @IsString()
+  teamRole?: string;
+
+  @ApiPropertyOptional({ description: 'Client testimonial' })
+  @IsOptional()
+  @IsString()
+  clientTestimonial?: string;
+
+  @ApiPropertyOptional({ description: 'Client name' })
+  @IsOptional()
+  @IsString()
+  clientName?: string;
+
+  @ApiPropertyOptional({ description: 'Client position' })
+  @IsOptional()
+  @IsString()
+  clientPosition?: string;
+
+  @ApiPropertyOptional({ description: 'Load time' })
+  @IsOptional()
+  @IsNumber()
+  loadTime?: number;
+
+  @ApiPropertyOptional({ description: 'Performance score' })
+  @IsOptional()
+  @IsNumber()
+  performanceScore?: number;
+
+  @ApiPropertyOptional({ description: 'Accessibility score' })
+  @IsOptional()
+  @IsNumber()
+  accessibilityScore?: number;
+
+  @IsOptional()
+  timeline?: {
+    start?: string;
+    end?: string;
+    duration?: string;
+  };
+
+  @IsOptional()
+  team?: {
+    size?: number;
+    role?: string;
+  };
+
+  @ApiPropertyOptional({
+    description: 'Project results and metrics',
+    type: 'array',
+    example: [
+      { metric: 'Active Users', value: '2,500+' },
+      { metric: 'Performance Improvement', value: '40%' },
+    ],
+  })
+  @IsOptional()
+  results?: Array<{
+    metric: string;
+    value: string;
+  }>;
+
+  @ApiPropertyOptional({ description: 'Project type' })
+  @IsOptional()
+  @IsString()
+  projectType?: string;
 }

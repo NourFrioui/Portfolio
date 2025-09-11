@@ -4,6 +4,7 @@
     "about": "About",
     "experience": "Experience",
     "skills": "Skills",
+    "studies": "Studies",
     "projects": "Projects",
     "contact": "Contact"
   },
@@ -12,7 +13,18 @@
     "title": "Full Stack Developer",
     "subtitle": "I create modern web applications with cutting-edge technologies",
     "cta": "Get In Touch",
-    "downloadCV": "Download CV"
+    "downloadCV": "Download CV",
+    "bio": "I am a dedicated full-stack developer with a passion for creating innovative web solutions.",
+    "yearsExperience": "Years of Experience",
+    "projectsCompleted": "Projects Completed",
+    "happyClients": "Happy Clients",
+    "availableForWork": "Available for Work",
+    "hourlyRate": "Hourly Rate",
+    "experienceLabel": "Experience:",
+    "fallbackDescription": "I am a dedicated full-stack developer with a passion for creating innovative web solutions.",
+    "experienceText": "With {years} years of experience, I continue to explore new technologies, contribute to open source projects, and share knowledge with the developer community.",
+    "locationText": "Based in {location}, I work with clients worldwide to bring their digital visions to life.",
+    "loading": "Loading..."
   },
   "About": {
     "title": "About Me",
@@ -178,27 +190,27 @@
     }
   },
   "Admin": {
-    "title": "Admin Panel",
-    "backOffice": "Back-office",
-    "backToPortfolio": "Back to Portfolio",
+    "title": "Admin Dashboard",
     "dashboard": "Dashboard",
     "profile": "Profile",
     "categories": "Categories",
     "projects": "Projects",
+    "studies": "Studies",
     "experience": "Experience",
     "tags": "Tags",
     "technologies": "Technologies",
     "contacts": "Contacts",
-    "add": "Add",
+    "logout": "Logout",
     "edit": "Edit",
     "delete": "Delete",
     "save": "Save",
     "cancel": "Cancel",
     "loading": "Loading...",
     "noData": "No data available",
-    "confirm": "Are you sure?",
     "success": "Operation completed successfully",
     "error": "An error occurred",
+    "backToPortfolio": "Back to Portfolio",
+    "backOffice": "Back Office",
     "projectsManagement": "Projects Management",
     "manageProjects": "Manage your portfolio projects",
     "workExperience": "Work Experience",
@@ -219,7 +231,6 @@
     "portfolioManagement": "Portfolio Management",
     "systemStatus": "System Status",
     "online": "Online",
-    "logout": "Logout",
     "profilePreview": {
       "title": "Portfolio Preview",
       "subtitle": "How your profile will appear to visitors",
@@ -239,6 +250,7 @@
         "title": "Your Professional Title",
         "initial": "U"
       }
+    
     },
     "quickActions": {
       "title": "Quick Actions",

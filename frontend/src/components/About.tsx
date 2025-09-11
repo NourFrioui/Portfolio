@@ -149,25 +149,64 @@ const About: React.FC = () => {
               )}
             </div>
 
-            <div className="flex flex-wrap gap-4">
-              {(
-                userProfile?.skills || [
-                  "React & Next.js",
-                  "Node.js & Express",
-                  "TypeScript",
-                  "MongoDB & PostgreSQL",
-                ]
-              ).map((skill, index) => (
-                <div
-                  key={skill}
-                  className={`${
-                    skillColors[index % skillColors.length]
-                  } px-4 py-2 rounded-full text-sm font-medium`}
-                >
-                  {skill}
+            {/* Technologies - Auto scroll horizontal */}
+            <div>
+             
+
+              <div className="relative overflow-hidden border border-gray-200 rounded-lg bg-gray-50/60 p-3">
+                <div className="flex gap-3 animate-scroll">
+                  {(userProfile?.skills || [
+                    "React & Next.js",
+                    "Node.js & Express",
+                    "TypeScript",
+                    "MongoDB & PostgreSQL",
+                    "NestJS",
+                    "Odoo",
+                    "PostgreSQL",
+                    "Docker",
+                  ]).map((skill, index) => (
+                    <div
+                      key={skill}
+                      className="flex items-center gap-2 bg-white rounded-md border border-gray-100 px-3 py-2 shadow-sm min-w-[150px] shrink-0"
+                    >
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${skillColors[index % skillColors.length]}`}
+                      >
+                        ●
+                      </span>
+                      <span className="text-sm text-gray-800 truncate">{skill}</span>
+                    </div>
+                  ))}
+
+                  {/* Clone des items pour effet boucle infinie */}
+                  {(userProfile?.skills || [
+                    "React & Next.js",
+                    "Node.js & Express",
+                    "TypeScript",
+                    "MongoDB & PostgreSQL",
+                    "NestJS",
+                    "Odoo",
+                    "PostgreSQL",
+                    "Docker",
+                  ]).map((skill, index) => (
+                    <div
+                      key={`${skill}-clone`}
+                      className="flex items-center gap-2 bg-white rounded-md border border-gray-100 px-3 py-2 shadow-sm min-w-[150px] shrink-0"
+                    >
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${skillColors[index % skillColors.length]}`}
+                      >
+                        ●
+                      </span>
+                      <span className="text-sm text-gray-800 truncate">{skill}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
             </div>
+
+
 
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-3 pt-2">

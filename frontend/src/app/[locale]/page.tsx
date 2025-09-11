@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
+import Studies from "@/components/Studies";
 import Experience from "@/components/Experience";
 import Skills from "@/components/Skills";
 import Projects from "@/components/Projects";
@@ -13,6 +14,7 @@ export default function HomePage() {
       <Header />
       <Hero />
       <About />
+      <Studies />
       <Experience />
       <Skills />
       <Projects />

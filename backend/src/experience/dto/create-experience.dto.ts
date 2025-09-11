@@ -5,6 +5,7 @@ import {
   IsArray,
   IsDateString,
   IsBoolean,
+  IsEnum,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -81,4 +82,12 @@ export class CreateExperienceDto {
   @IsOptional()
   @IsBoolean()
   isCurrentJob?: boolean;
+
+  @ApiPropertyOptional({
+    description: 'Employment type',
+    enum: ['fulltime', 'freelance', 'contract', 'internship'],
+  })
+  @IsOptional()
+  @IsEnum(['fulltime', 'freelance', 'contract', 'internship'])
+  type?: string;
 }

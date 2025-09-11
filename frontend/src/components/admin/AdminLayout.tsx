@@ -29,6 +29,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     { name: t('profile'), href: "/admin/profile", icon: "👤" },
     { name: t('categories'), href: "/admin/categories", icon: "🗂️" },
     { name: t('projects'), href: "/admin/projects", icon: "💼" },
+    { name: t('studies'), href: "/admin/studies", icon: "🎓" },
     { name: t('experience'), href: "/admin/experience", icon: "🎯" },
     { name: t('tags'), href: "/admin/tags", icon: "🏷️" },
     { name: t('technologies'), href: "/admin/technologies", icon: "💡" },

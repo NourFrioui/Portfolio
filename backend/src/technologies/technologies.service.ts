@@ -18,7 +18,11 @@ export class TechnologiesService {
   }
 
   async findAll(): Promise<Technology[]> {
-    return this.technologyModel.find().sort({ percentage: -1 }).exec();
+    return this.technologyModel
+      .find()
+      .populate('categoryId', 'name')
+      .sort({ percentage: -1 })
+      .exec();
   }
 
   async findOne(id: string): Promise<Technology | null> {

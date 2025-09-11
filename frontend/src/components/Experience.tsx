@@ -22,7 +22,7 @@ interface Experience {
   highlights?: string[];
   companyLogo?: string;
   location?: string;
-  current?: boolean;
+  isCurrentJob?: boolean;
   type?: "fulltime" | "freelance" | "contract" | "internship";
   projectIds?: string[];
 }
@@ -56,7 +56,7 @@ const Experience: React.FC = () => {
             company: "Tech Startup Inc.",
             position: "Senior Full Stack Developer",
             startDate: "2022-01-01",
-            current: true,
+            isCurrentJob: true,
             description: "Led development of scalable web applications using modern technologies.",
             technologies: ["React", "Node.js", "TypeScript", "MongoDB"],
             type: "fulltime",
@@ -104,9 +104,9 @@ const Experience: React.FC = () => {
       : d.toLocaleDateString("en-US", { year: "numeric", month: "short" });
   };
 
-  const formatPeriod = (startDate: string, endDate?: string, current?: boolean) => {
+  const formatPeriod = (startDate: string, endDate?: string, isCurrentJob?: boolean) => {
     const start = formatDate(startDate);
-    if (current || !endDate) return `${start} - Present`;
+    if (isCurrentJob || !endDate) return `${start} - Present`;
     return `${start} - ${formatDate(endDate)}`;
   };
 
@@ -167,7 +167,7 @@ const Experience: React.FC = () => {
                 <div key={exp._id} className="relative flex items-start gap-6">
                   {/* Timeline dot */}
                   <div className="relative z-10 flex-shrink-0">
-                    <div className={`w-4 h-4 rounded-full border-4 ${exp.current ? 'bg-green-500 border-green-200' : 'bg-blue-500 border-blue-200'}`}></div>
+                    <div className={`w-4 h-4 rounded-full border-4 ${exp.isCurrentJob ? 'bg-green-500 border-green-200' : 'bg-blue-500 border-blue-200'}`}></div>
                   </div>
 
                   {/* Experience card */}
@@ -188,9 +188,9 @@ const Experience: React.FC = () => {
                           <div className="text-blue-600 font-medium text-lg">{exp.company}</div>
                           <div className="flex flex-wrap items-center gap-2 mt-2">
                             <Badge variant="secondary" size="sm">
-                              {formatPeriod(exp.startDate, exp.endDate, exp.current)}
+                              {formatPeriod(exp.startDate, exp.endDate, exp.isCurrentJob)}
                             </Badge>
-                            {exp.current && (
+                            {exp.isCurrentJob && (
                               <Badge variant="success" size="sm">Current</Badge>
                             )}
                             {exp.type && (

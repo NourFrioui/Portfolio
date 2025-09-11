@@ -28,4 +28,9 @@ export class CreateContactDto {
   @MinLength(10)
   @ApiProperty({ description: 'The message of the contact' })
   message: string;
+
+  @IsOptional()
+  @IsString()
+  @ApiPropertyOptional({ description: 'Project type' })
+  projectType?: string;
 }

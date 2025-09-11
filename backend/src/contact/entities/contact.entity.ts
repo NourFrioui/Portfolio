@@ -16,6 +16,9 @@ export class Contact {
 
   @Prop({ default: Date.now })
   createdAt: Date;
+
+  @Prop({ required: false })
+  projectType?: string;
 }
 
 export const ContactSchema = SchemaFactory.createForClass(Contact);

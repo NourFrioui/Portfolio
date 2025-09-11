@@ -99,6 +99,19 @@ export class Experience {
   isCurrentJob?: boolean;
 
   @ApiProperty({
+    description: 'Employment type',
+    example: 'fulltime',
+    enum: ['fulltime', 'freelance', 'contract', 'internship'],
+    required: false,
+  })
+  @Prop({
+    type: String,
+    enum: ['fulltime', 'freelance', 'contract', 'internship'],
+    default: 'fulltime',
+  })
+  type?: string;
+
+  @ApiProperty({
     description: 'Category ID',
     example: '507f1f77bcf86cd799439011',
     required: false,

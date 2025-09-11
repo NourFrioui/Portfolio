@@ -4,13 +4,26 @@ const nextConfig = {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
   },
   images: {
-    domains: ['localhost', '127.0.0.1'],
+    domains: [
+      'localhost', 
+      '127.0.0.1',
+      'play-lh.googleusercontent.com',
+      'lh3.googleusercontent.com'
+    ],
     remotePatterns: [
       {
         protocol: 'http',
         hostname: 'localhost',
         port: '3000',
         pathname: '/upload/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'play-lh.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
       },
     ],
   },

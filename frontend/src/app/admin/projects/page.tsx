@@ -36,6 +36,20 @@ type Project = {
   order?: number;
   isFeatured?: boolean;
   isActive?: boolean;
+  timeline?: {
+    start?: string;
+    end?: string;
+    duration?: string;
+  };
+  team?: {
+    size?: number;
+    role?: string;
+  };
+  results?: {
+    metric: string;
+    value: string;
+  }[];
+  projectType?: string;
 };
 
 type Category = {
@@ -73,7 +87,18 @@ export default function AdminProjectsPage() {
     images: [],
     order: 1,
     isFeatured: false,
-    isActive: true
+    isActive: true,
+    timeline: {
+      start: "",
+      end: "",
+      duration: "",
+    },
+    team: {
+      size: 1,
+      role: "",
+    },
+    results: [],
+    projectType: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -168,6 +193,10 @@ export default function AdminProjectsPage() {
         order: formData.order || 1,
         isFeatured: formData.isFeatured || false,
         isActive: formData.isActive !== false,
+        timeline: formData.timeline || undefined,
+        team: formData.team || undefined,
+        results: formData.results || undefined,
+        projectType: formData.projectType || undefined,
       };
       if (!payload.imageUrl) delete payload.imageUrl;
       // Debug: Inspect final payload (remove for production if desired)
@@ -536,6 +565,149 @@ export default function AdminProjectsPage() {
                       })}
                     </div>
                   </div>
+
+                  {/* Dates */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.startDate || ''}
+                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={formData.endDate || ''}
+                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Timeline */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Timeline</label>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <input
+                        type="date"
+                        placeholder="Start"
+                        value={formData.timeline?.start || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, timeline: { ...formData.timeline, start: e.target.value } })
+                        }
+                        className="border border-slate-300 rounded-lg px-3 py-2"
+                      />
+                      <input
+                        type="date"
+                        placeholder="End"
+                        value={formData.timeline?.end || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, timeline: { ...formData.timeline, end: e.target.value } })
+                        }
+                        className="border border-slate-300 rounded-lg px-3 py-2"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Duration (e.g. 3 months)"
+                        value={formData.timeline?.duration || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, timeline: { ...formData.timeline, duration: e.target.value } })
+                        }
+                        className="border border-slate-300 rounded-lg px-3 py-2"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Team */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Team</label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <input
+                        type="number"
+                        placeholder="Team size"
+                        value={formData.team?.size || 1}
+                        onChange={(e) =>
+                          setFormData({ ...formData, team: { ...formData.team, size: parseInt(e.target.value) || 1 } })
+                        }
+                        className="border border-slate-300 rounded-lg px-3 py-2"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Your role"
+                        value={formData.team?.role || ''}
+                        onChange={(e) =>
+                          setFormData({ ...formData, team: { ...formData.team, role: e.target.value } })
+                        }
+                        className="border border-slate-300 rounded-lg px-3 py-2"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Results */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Results (metrics)</label>
+                    {(formData.results || []).map((res, idx) => (
+                      <div key={idx} className="flex gap-2 mb-2">
+                        <input
+                          type="text"
+                          placeholder="Metric (e.g. Users)"
+                          value={res.metric}
+                          onChange={(e) => {
+                            const next = [...(formData.results || [])];
+                            next[idx].metric = e.target.value;
+                            setFormData({ ...formData, results: next });
+                          }}
+                          className="flex-1 border border-slate-300 rounded-lg px-3 py-2"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Value (e.g. 1,000+)"
+                          value={res.value}
+                          onChange={(e) => {
+                            const next = [...(formData.results || [])];
+                            next[idx].value = e.target.value;
+                            setFormData({ ...formData, results: next });
+                          }}
+                          className="flex-1 border border-slate-300 rounded-lg px-3 py-2"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, results: (formData.results || []).filter((_, i) => i !== idx) })}
+                          className="px-2 text-red-600 hover:text-red-800"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setFormData({ ...formData, results: [...(formData.results || []), { metric: '', value: '' }] })}
+                      className="px-3 py-1 text-sm bg-slate-100 rounded hover:bg-slate-200"
+                    >
+                      + Add Result
+                    </button>
+                  </div>
+
+                  {/* Project Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Project Type</label>
+                    <input
+                      type="text"
+                      value={formData.projectType || ''}
+                      onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2"
+                      placeholder="e.g. Mobile App, Web App, Backend Service"
+                    />
+                  </div>
+
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">

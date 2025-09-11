@@ -199,3 +199,16 @@ body {
   margin: 0 auto 3rem;
   font-size: 1.125rem;
 }
+
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll {
+  display: flex;
+  width: max-content;
+  animation: scroll 50s linear infinite;
+}
+

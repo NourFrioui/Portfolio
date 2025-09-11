@@ -20,6 +20,10 @@ export class Project {
   @Prop({ required: true })
   description: string;
 
+  @ApiProperty({ description: 'Long description', required: false })
+  @Prop()
+  longDescription?: string;
+
   @ApiProperty({
     description: 'Detailed project description',
     example:
@@ -96,6 +100,94 @@ export class Project {
   @Prop([String])
   solutions?: string[];
 
+  @ApiProperty({ description: 'Live URL', required: false })
+  @Prop()
+  liveUrl?: string;
+
+  @ApiProperty({
+    description: 'Timeline information',
+    type: 'object',
+    properties: {
+      start: { type: 'string', example: '2023-01' },
+      end: { type: 'string', example: '2023-06' },
+      duration: { type: 'string', example: '6 months' },
+    },
+    additionalProperties: false,
+  })
+  @Prop({ type: { start: String, end: String, duration: String }, _id: false })
+  timeline?: {
+    start?: string;
+    end?: string;
+    duration?: string;
+  };
+
+  @ApiProperty({
+    description: 'Team information',
+    type: 'object',
+    properties: {
+      size: { type: 'number', example: 4 },
+      role: { type: 'string', example: 'Frontend Developer' },
+    },
+    additionalProperties: false,
+  })
+  @Prop({ type: { size: Number, role: String }, _id: false })
+  team?: {
+    size?: number;
+    role?: string;
+  };
+
+  @ApiProperty({
+    description: 'Project results and metrics',
+    type: 'array',
+    required: false,
+    example: [
+      { metric: 'Active Users', value: '2,500+' },
+      { metric: 'Performance Improvement', value: '40%' },
+    ],
+  })
+  @Prop({ type: [{ metric: String, value: String }], _id: false, default: [] })
+  results?: Array<{
+    metric: string;
+    value: string;
+  }>;
+
+  @ApiProperty({
+    description: 'Client testimonial',
+    type: 'object',
+    properties: {
+      text: { type: 'string', example: 'Great work!' },
+      author: { type: 'string', example: 'John Doe' },
+      position: { type: 'string', example: 'CEO at Company' },
+    },
+    additionalProperties: false,
+  })
+  @Prop({
+    type: {
+      text: { type: String },
+      author: { type: String },
+      position: { type: String },
+    },
+    _id: false,
+  })
+  clientTestimonial?: {
+    text: string;
+    author: string;
+    position?: string;
+  };
+
+  @ApiProperty({
+    description: 'Start date',
+    required: false,
+  })
+  @Prop()
+  startDate?: string;
+
+  @ApiProperty({
+    description: 'End date',
+    required: false,
+  })
+  @Prop()
+  endDate?: string;
   @ApiProperty({
     description: 'Project URL',
     example: 'https://myproject.com',
@@ -145,14 +237,32 @@ export class Project {
   isActive: boolean;
 
   @ApiProperty({
-    description: 'Creation date',
+    description: 'Load time',
+    required: false,
   })
-  createdAt: Date;
+  @Prop()
+  loadTime?: number;
 
   @ApiProperty({
-    description: 'Last update date',
+    description: 'Performance score',
+    required: false,
   })
-  updatedAt: Date;
+  @Prop()
+  performanceScore?: number;
+
+  @ApiProperty({
+    description: 'Accessibility score',
+    required: false,
+  })
+  @Prop()
+  accessibilityScore?: number;
+
+  @ApiProperty({
+    description: 'Project type',
+    required: false,
+  })
+  @Prop()
+  projectType?: string;
 }
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
