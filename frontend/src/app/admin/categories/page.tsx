@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+
+// Force dynamic rendering to prevent prerendering issues
+export const dynamic = 'force-dynamic';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {

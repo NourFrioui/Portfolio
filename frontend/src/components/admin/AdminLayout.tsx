@@ -3,12 +3,14 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 interface AdminLayoutProps {
   children: React.ReactNode;
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  const t = useTranslations('Admin');
   const pathname = usePathname();
   const router = useRouter();
 
@@ -23,14 +25,14 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   }, [router]);
 
   const navigation = [
-    { name: "Dashboard", href: "/admin", icon: "📊" },
-    { name: "Profile", href: "/admin/profile", icon: "👤" },
-    { name: "Categories", href: "/admin/categories", icon: "🏷️" },
-    { name: "Projects", href: "/admin/projects", icon: "💼" },
-    { name: "Experience", href: "/admin/experience", icon: "🎯" },
-    { name: "Tags", href: "/admin/tags", icon: "🏷️" },
-    { name: "Technologies", href: "/admin/technologies", icon: "⚡" },
-    { name: "Contacts", href: "/admin/contacts", icon: "📧" },
+    { name: t('dashboard'), href: "/admin", icon: "📊" },
+    { name: t('profile'), href: "/admin/profile", icon: "👤" },
+    { name: t('categories'), href: "/admin/categories", icon: "🗂️" },
+    { name: t('projects'), href: "/admin/projects", icon: "💼" },
+    { name: t('experience'), href: "/admin/experience", icon: "🎯" },
+    { name: t('tags'), href: "/admin/tags", icon: "🏷️" },
+    { name: t('technologies'), href: "/admin/technologies", icon: "💡" },
+    { name: t('contacts'), href: "/admin/contacts", icon: "📧" },
   ];
 
   const handleLogout = () => {
@@ -47,7 +49,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         <div className="h-16 flex items-center justify-center border-b border-slate-200 bg-gradient-to-r from-blue-600 to-cyan-500">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded-md bg-white/20 backdrop-blur border border-white/30" />
-            <h1 className="text-lg font-semibold text-white">Admin Panel</h1>
+            <h1 className="text-lg font-semibold text-white">{t('title')}</h1>
           </div>
         </div>
 
@@ -88,7 +90,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             className="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-3 text-sm font-medium text-slate-700 hover:bg-gradient-to-r hover:from-slate-100 hover:to-slate-50 hover:border-slate-300 transition-all duration-200 hover:transform hover:scale-105"
           >
             <span className="text-lg">🏠</span>
-            <span>Back to Portfolio</span>
+            <span>{t('backToPortfolio')}</span>
           </Link>
         </div>
       </aside>
@@ -99,27 +101,27 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
           <div className="h-full mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-sm font-medium text-slate-700">
-                Portfolio Management
+                {t('portfolioManagement')}
               </div>
               <div className="h-4 w-px bg-slate-300"></div>
-              <div className="text-xs text-slate-500">Back-office</div>
+              <div className="text-xs text-slate-500">{t('backOffice')}</div>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-xs text-slate-500">
                 <span className="hidden sm:inline font-medium">
-                  System Status
+                  {t('systemStatus')}
                 </span>
                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
                 <span className="hidden sm:inline text-emerald-600 font-medium">
-                  Online
+                  {t('online')}
                 </span>
               </div>
               <button
                 onClick={handleLogout}
                 className="ml-4 px-3 py-2 text-sm rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all"
-                aria-label="Logout"
+                aria-label={t('logout')}
               >
-                Logout
+                {t('logout')}
               </button>
             </div>
           </div>

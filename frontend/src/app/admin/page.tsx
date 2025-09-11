@@ -6,6 +6,9 @@ import StatsCard from "@/components/admin/StatsCard";
 import QuickActions from "@/components/admin/QuickActions";
 import RecentActivity from "@/components/admin/RecentActivity";
 
+// Force dynamic rendering to prevent prerendering issues
+export const dynamic = 'force-dynamic';
+
 export function generateViewport() {
   return {
     width: "device-width",

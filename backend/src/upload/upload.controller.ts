@@ -49,7 +49,7 @@ export class UploadController {
     FileInterceptor('file', {
       storage: memoryStorage(),
       fileFilter: (req, file, cb) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|gif|webp)$/)) {
+        if (!file.originalname.match(/\.(svg|jpg|jpeg|png|gif|webp)$/)) {
           return cb(new Error('Only image files are allowed!'), false);
         }
         cb(null, true);

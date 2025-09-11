@@ -22,6 +22,13 @@ const nextConfig = {
       },
     ];
   },
+  // Skip static generation for admin routes
+  async generateBuildId() {
+    return 'build-' + Date.now();
+  },
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
   webpack: (config) => {
     config.resolve.fallback = {
       ...config.resolve.fallback,

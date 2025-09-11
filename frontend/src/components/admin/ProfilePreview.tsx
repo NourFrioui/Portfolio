@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { X, MapPin, Phone, Mail, Globe, Github, Linkedin, Twitter, Download, Briefcase, Calendar } from 'lucide-react';
 import ImageDisplay from '../ImageDisplay';
+import { useTranslations } from 'next-intl';
 
 type UserProfile = {
   _id?: string;
@@ -43,6 +44,8 @@ interface ProfilePreviewProps {
 }
 
 export default function ProfilePreview({ isOpen, onClose, profileData }: ProfilePreviewProps) {
+  const t = useTranslations('Admin.profilePreview');
+  
   if (!isOpen) return null;
 
   return (
@@ -63,8 +66,8 @@ export default function ProfilePreview({ isOpen, onClose, profileData }: Profile
         {/* Header */}
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Portfolio Preview</h2>
-            <p className="text-gray-600">How your profile will appear to visitors</p>
+            <h2 className="text-2xl font-bold text-gray-900">{t('title')}</h2>
+            <p className="text-gray-500">{t('hourlyRate', { rate: profileData.hourlyRate || '0' })}</p>
           </div>
           <button
             onClick={onClose}
@@ -81,12 +84,12 @@ export default function ProfilePreview({ isOpen, onClose, profileData }: Profile
             <div className="relative inline-block mb-6">
               <ImageDisplay
                 userId={profileData._id || ''}
-                alt={profileData.fullName || 'Profile'}
+                alt={profileData.fullName || t('defaults.name')}
                 className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-lg"
                 fallback={
                   <div className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-400 to-purple-600 flex items-center justify-center border-4 border-white shadow-lg">
                     <span className="text-3xl font-bold text-white">
-                      {profileData.fullName?.charAt(0) || 'U'}
+                      {profileData.fullName?.charAt(0) || t('defaults.initial')}
                     </span>
                   </div>
                 }
@@ -94,42 +97,63 @@ export default function ProfilePreview({ isOpen, onClose, profileData }: Profile
               {profileData.availableForWork && (
                 <div className="absolute -bottom-2 -right-2 bg-green-500 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center space-x-1">
                   <CheckBadgeIcon className="h-3 w-3" />
-                  <span>Available</span>
+                  <span>{t('available')}</span>
                 </div>
               )}
             </div>
 
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              {profileData.fullName || 'Your Name'}
+              {profileData.fullName || t('defaults.name')}
             </h1>
             <p className="text-xl text-gray-600 mb-4">
-              {profileData.title || 'Your Professional Title'}
+              {profileData.title || t('defaults.title')}
             </p>
             
             {/* Contact Info */}
-            <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 mb-6">
+            <div className="flex flex-wrap justify-center gap-4 text-sm text-gray-600 mb-6" aria-label={t('contactInfo')}>
               {profileData.location && (
                 <div className="flex items-center space-x-1">
                   <MapPinIcon className="h-4 w-4" />
                   <span>{profileData.location}</span>
                 </div>
               )}
-              {profileData.phone && (
+              {profileData.phone ? (
                 <div className="flex items-center space-x-1">
                   <PhoneIcon className="h-4 w-4" />
-                  <span>{profileData.phone}</span>
+                  <a href={`tel:${profileData.phone}`} className="hover:underline">
+                    {profileData.phone}
+                  </a>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1 text-gray-400">
+                  <PhoneIcon className="h-4 w-4" />
+                  <span>{t('noPhone')}</span>
                 </div>
               )}
-              {profileData.email && (
+              {profileData.email ? (
                 <div className="flex items-center space-x-1">
                   <EnvelopeIcon className="h-4 w-4" />
-                  <span>{profileData.email}</span>
+                  <a href={`mailto:${profileData.email}`} className="hover:underline">
+                    {profileData.email}
+                  </a>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1 text-gray-400">
+                  <EnvelopeIcon className="h-4 w-4" />
+                  <span>{t('noEmail')}</span>
                 </div>
               )}
-              {profileData.website && (
+              {profileData.website ? (
                 <div className="flex items-center space-x-1">
                   <GlobeAltIcon className="h-4 w-4" />
-                  <span>{profileData.website}</span>
+                  <a href={profileData.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {profileData.website}
+                  </a>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1 text-gray-400">
+                  <GlobeAltIcon className="h-4 w-4" />
+                  <span>{t('noWebsite')}</span>
                 </div>
               )}
             </div>
@@ -148,28 +172,28 @@ export default function ProfilePreview({ isOpen, onClose, profileData }: Profile
               <div className="text-3xl font-bold text-blue-600 mb-2">
                 {profileData.yearsOfExperience || 0}+
               </div>
-              <div className="text-gray-600 font-medium">Years Experience</div>
+              <p className="text-gray-500">{t('yearsExperience', { count: profileData.yearsOfExperience || 0 })}</p>
             </div>
             
             <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl">
               <div className="text-3xl font-bold text-purple-600 mb-2">
                 {profileData.skills?.length || 0}
               </div>
-              <div className="text-gray-600 font-medium">Skills</div>
+              <div className="text-gray-600 font-medium">{t('skills')}</div>
             </div>
             
             <div className="text-center p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl">
               <div className="text-3xl font-bold text-green-600 mb-2">
                 {profileData.languages?.length || 0}
               </div>
-              <div className="text-gray-600 font-medium">Languages</div>
+              <div className="text-gray-600 font-medium">{t('languages')}</div>
             </div>
           </div>
 
           {/* Skills Section */}
           {profileData.skills && profileData.skills.length > 0 && (
             <div className="mb-12">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Skills & Technologies</h3>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">{t('skills')}</h3>
               <div className="flex flex-wrap justify-center gap-3">
                 {profileData.skills.map((skill, index) => (
                   <span
@@ -186,7 +210,7 @@ export default function ProfilePreview({ isOpen, onClose, profileData }: Profile
           {/* Languages Section */}
           {profileData.languages && profileData.languages.length > 0 && (
             <div className="mb-12">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">Languages</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('languages')}</h3>
               <div className="flex flex-wrap justify-center gap-3">
                 {profileData.languages.map((language, index) => (
                   <span
@@ -202,7 +226,7 @@ export default function ProfilePreview({ isOpen, onClose, profileData }: Profile
 
           {/* Social Links */}
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">Connect With Me</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('contactInfo')}</h3>
             <div className="flex justify-center space-x-4">
               {profileData.website && (
                 <a
@@ -258,7 +282,7 @@ export default function ProfilePreview({ isOpen, onClose, profileData }: Profile
             <div className="mt-8 text-center">
               <div className="inline-block bg-gradient-to-r from-green-100 to-emerald-100 px-6 py-3 rounded-2xl border border-green-200">
                 <span className="text-lg font-semibold text-green-800">
-                  Rate: {profileData.hourlyRate}
+                  {t('hourlyRate', { rate: profileData.hourlyRate || '0' })}
                 </span>
               </div>
             </div>

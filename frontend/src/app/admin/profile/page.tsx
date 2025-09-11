@@ -1,8 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import ImageUpload from "@/components/admin/ImageUpload";
+import AdminLayout from "../../../components/admin/AdminLayout";
+
+// Force dynamic rendering to prevent prerendering issues
+export const dynamic = 'force-dynamic';
 import PdfUpload from "@/components/admin/PdfUpload";
+import ImageUpload from "@/components/admin/ImageUpload";
 import { toast } from "react-hot-toast";
 import api from "@/utils/api";
 import ProfilePreview from "@/components/admin/ProfilePreview";

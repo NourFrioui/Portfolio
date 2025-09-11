@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface QuickAction {
   title: string;
@@ -12,31 +13,33 @@ interface QuickAction {
 }
 
 const QuickActions: React.FC = () => {
+  const t = useTranslations('Admin');
+  
   const actions: QuickAction[] = [
     {
-      title: 'Add Project',
-      description: 'Create a new project showcase',
+      title: t('addProject'),
+      description: t('quickActions.addProjectDesc'),
       href: '/admin/projects',
       icon: '➕',
       color: 'bg-blue-500 hover:bg-blue-600',
     },
     {
-      title: 'Update Profile',
-      description: 'Edit your personal information',
+      title: t('quickActions.updateProfile'),
+      description: t('quickActions.updateProfileDesc'),
       href: '/admin/profile',
       icon: '✏️',
       color: 'bg-green-500 hover:bg-green-600',
     },
     {
-      title: 'Add Experience',
-      description: 'Add work experience entry',
+      title: t('addExperience'),
+      description: t('quickActions.addExperienceDesc'),
       href: '/admin/experience',
       icon: '💼',
       color: 'bg-purple-500 hover:bg-purple-600',
     },
     {
-      title: 'Manage Tech Stack',
-      description: 'Update your technologies',
+      title: t('quickActions.manageTechStack'),
+      description: t('quickActions.manageTechStackDesc'),
       href: '/admin/technologies',
       icon: '⚡',
       color: 'bg-orange-500 hover:bg-orange-600',
@@ -49,7 +52,7 @@ const QuickActions: React.FC = () => {
         <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
           <span className="text-white text-lg">⚡</span>
         </div>
-        <h3 className="text-xl font-bold text-gray-900">Quick Actions</h3>
+        <h3 className="text-xl font-bold text-gray-900">{t('quickActions.title')}</h3>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {actions.map((action) => (

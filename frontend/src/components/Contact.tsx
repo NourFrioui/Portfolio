@@ -7,7 +7,19 @@ import { useTranslations } from "../hooks/useTranslations";
 import Card from "./ui/Card";
 import Badge from "./ui/Badge";
 import Button from "./ui/Button";
-import { Mail, Phone, MapPin, Clock, CheckCircle, AlertCircle, Linkedin, Github, Twitter, Calendar, MessageSquare } from "lucide-react";
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Linkedin,
+  Github,
+  Twitter,
+  Calendar,
+  MessageSquare,
+} from "lucide-react";
 
 interface UserProfile {
   email?: string;
@@ -37,7 +49,6 @@ const Contact: React.FC = () => {
     subject: "",
     message: "",
     projectType: "",
-    budget: "",
   });
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(false);
@@ -91,12 +102,20 @@ const Contact: React.FC = () => {
     try {
       await api.post("/contact", formData);
       toast.success(t("Contact.success") || "Message sent successfully!");
-      setFormData({ name: "", email: "", subject: "", message: "", projectType: "", budget: "" });
+      setFormData({
+        name: "",
+        email: "",
+        subject: "",
+        message: "",
+        projectType: "",
+      });
       setErrors({});
       setTouched({});
     } catch (error) {
       console.error("Error sending message:", error);
-      toast.error(t("Contact.error") || "Failed to send message. Please try again.");
+      toast.error(
+        t("Contact.error") || "Failed to send message. Please try again."
+      );
     } finally {
       setSubmitting(false);
     }
@@ -106,34 +125,48 @@ const Contact: React.FC = () => {
     const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Name is required";
+      newErrors.name =
+        t("Contact.formValidation.nameRequired") || "Name is required";
     } else if (formData.name.trim().length < 2) {
-      newErrors.name = "Name must be at least 2 characters";
+      newErrors.name =
+        t("Contact.formValidation.nameMinLength") ||
+        "Name must be at least 2 characters";
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
+      newErrors.email =
+        t("Contact.formValidation.emailRequired") || "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email address";
+      newErrors.email =
+        t("Contact.formValidation.emailInvalid") ||
+        "Please enter a valid email address";
     }
 
     if (!formData.subject.trim()) {
-      newErrors.subject = "Subject is required";
+      newErrors.subject =
+        t("Contact.formValidation.subjectRequired") || "Subject is required";
     } else if (formData.subject.trim().length < 5) {
-      newErrors.subject = "Subject must be at least 5 characters";
+      newErrors.subject =
+        t("Contact.formValidation.subjectMinLength") ||
+        "Subject must be at least 5 characters";
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = "Message is required";
+      newErrors.message =
+        t("Contact.formValidation.messageRequired") || "Message is required";
     } else if (formData.message.trim().length < 10) {
-      newErrors.message = "Message must be at least 10 characters";
+      newErrors.message =
+        t("Contact.formValidation.messageMinLength") ||
+        "Message must be at least 10 characters";
     }
 
     return newErrors;
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     setFormData({
@@ -150,7 +183,11 @@ const Contact: React.FC = () => {
     }
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleBlur = (
+    e: React.FocusEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name } = e.target;
     setTouched({
       ...touched,
@@ -185,26 +222,34 @@ const Contact: React.FC = () => {
             {userProfile?.availableForWork !== undefined && (
               <Card className="p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className={`w-3 h-3 rounded-full ${
-                    userProfile.availableForWork ? 'bg-green-500 animate-pulse' : 'bg-red-500'
-                  }`}></div>
+                  <div
+                    className={`w-3 h-3 rounded-full ${
+                      userProfile.availableForWork
+                        ? "bg-green-500 animate-pulse"
+                        : "bg-red-500"
+                    }`}
+                  ></div>
                   <h3 className="text-lg font-semibold text-gray-900">
-                    {userProfile.availableForWork 
-                      ? (t("Contact.availableForWork") || "Available for New Projects")
-                      : (t("Contact.notAvailable") || "Currently Unavailable")
-                    }
+                    {userProfile.availableForWork
+                      ? t("Contact.availableForWork") ||
+                        "Available for New Projects"
+                      : t("Contact.notAvailable") || "Currently Unavailable"}
                   </h3>
                 </div>
                 <p className="text-gray-600 mb-4">
-                  {userProfile.availableForWork 
-                    ? (t("Contact.availableDescription") || "I'm currently accepting new projects and would love to hear about yours.")
-                    : (t("Contact.notAvailableDescription") || "I'm currently focused on existing projects but feel free to reach out for future opportunities.")
-                  }
+                  {userProfile.availableForWork
+                    ? t("Contact.availableDescription") ||
+                      "I'm currently accepting new projects and would love to hear about yours."
+                    : t("Contact.notAvailableDescription") ||
+                      "I'm currently focused on existing projects but feel free to reach out for future opportunities."}
                 </p>
                 {userProfile.responseTime && (
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <Clock className="w-4 h-4" />
-                    <span>{t("Contact.responseTime") || "Response time"}: {userProfile.responseTime}</span>
+                    <span>
+                      {t("Contact.responseTime") || "Response time"}:{" "}
+                      {userProfile.responseTime}
+                    </span>
                   </div>
                 )}
               </Card>
@@ -216,7 +261,8 @@ const Contact: React.FC = () => {
                 {t("Contact.contactInfo") || "Get in Touch"}
               </h3>
               <p className="text-gray-600 mb-6">
-                {t("Contact.reachOut") || "Feel free to reach out through any of these channels."}
+                {t("Contact.reachOut") ||
+                  "Feel free to reach out through any of these channels."}
               </p>
 
               {loading ? (
@@ -240,8 +286,13 @@ const Contact: React.FC = () => {
                     <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                       <Mail className="w-5 h-5 text-blue-600" />
                       <div>
-                        <div className="font-medium text-gray-900">Email</div>
-                        <a href={`mailto:${userProfile.email}`} className="text-blue-600 hover:text-blue-800">
+                        <div className="font-medium text-gray-900">
+                          {t("Contact.email") || "Email"}
+                        </div>
+                        <a
+                          href={`mailto:${userProfile.email}`}
+                          className="text-blue-600 hover:text-blue-800"
+                        >
                           {userProfile.email}
                         </a>
                       </div>
@@ -251,8 +302,13 @@ const Contact: React.FC = () => {
                     <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                       <Phone className="w-5 h-5 text-green-600" />
                       <div>
-                        <div className="font-medium text-gray-900">Phone</div>
-                        <a href={`tel:${userProfile.phone}`} className="text-green-600 hover:text-green-800">
+                        <div className="font-medium text-gray-900">
+                          {t("Contact.phone") || "Phone"}
+                        </div>
+                        <a
+                          href={`tel:${userProfile.phone}`}
+                          className="text-green-600 hover:text-green-800"
+                        >
                           {userProfile.phone}
                         </a>
                       </div>
@@ -262,10 +318,19 @@ const Contact: React.FC = () => {
                     <div className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
                       <MapPin className="w-5 h-5 text-purple-600" />
                       <div>
-                        <div className="font-medium text-gray-900">Location</div>
-                        <span className="text-gray-700">{userProfile.location}</span>
+                        <div className="font-medium text-gray-900">
+                          {t("Contact.location") || "Location"}
+                        </div>
+                        <span className="text-gray-700">
+                          {userProfile.location}
+                        </span>
                         {userProfile.timezone && (
-                          <div className="text-sm text-gray-500">{userProfile.timezone}</div>
+                          <div className="text-sm text-gray-500">
+                            {t("Contact.timezone").replace(
+                              "{timezone}",
+                              userProfile.timezone
+                            ) || userProfile.timezone}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -275,51 +340,58 @@ const Contact: React.FC = () => {
 
               {/* Social Links */}
               <div className="mt-6 pt-6 border-t">
-                <h4 className="font-medium text-gray-900 mb-3">{t("Contact.followMe") || "Follow Me"}</h4>
+                <h4 className="font-medium text-gray-900 mb-3">
+                  {t("Contact.followMe") || "Follow Me"}
+                </h4>
                 <div className="flex space-x-4">
-                  {userProfile?.socialLinks?.linkedin && userProfile.socialLinks.linkedin !== "#" && (
-                    <a
-                      href={userProfile.socialLinks.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
-                      title="LinkedIn"
-                    >
-                      <Linkedin className="w-4 h-4" />
-                      <span className="text-sm font-medium">LinkedIn</span>
-                    </a>
-                  )}
-                  {userProfile?.socialLinks?.github && userProfile.socialLinks.github !== "#" && (
-                    <a
-                      href={userProfile.socialLinks.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
-                      title="GitHub"
-                    >
-                      <Github className="w-4 h-4" />
-                      <span className="text-sm font-medium">GitHub</span>
-                    </a>
-                  )}
-                  {userProfile?.socialLinks?.twitter && userProfile.socialLinks.twitter !== "#" && (
-                    <a
-                      href={userProfile.socialLinks.twitter}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 px-3 py-2 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors"
-                      title="Twitter"
-                    >
-                      <Twitter className="w-4 h-4" />
-                      <span className="text-sm font-medium">Twitter</span>
-                    </a>
-                  )}
+                  {userProfile?.socialLinks?.linkedin &&
+                    userProfile.socialLinks.linkedin !== "#" && (
+                      <a
+                        href={userProfile.socialLinks.linkedin}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                        title="LinkedIn"
+                      >
+                        <Linkedin className="w-4 h-4" />
+                        <span className="text-sm font-medium">LinkedIn</span>
+                      </a>
+                    )}
+                  {userProfile?.socialLinks?.github &&
+                    userProfile.socialLinks.github !== "#" && (
+                      <a
+                        href={userProfile.socialLinks.github}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 text-gray-600 hover:bg-gray-100 transition-colors"
+                        title="GitHub"
+                      >
+                        <Github className="w-4 h-4" />
+                        <span className="text-sm font-medium">GitHub</span>
+                      </a>
+                    )}
+                  {userProfile?.socialLinks?.twitter &&
+                    userProfile.socialLinks.twitter !== "#" && (
+                      <a
+                        href={userProfile.socialLinks.twitter}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 transition-colors"
+                        title="Twitter"
+                      >
+                        <Twitter className="w-4 h-4" />
+                        <span className="text-sm font-medium">Twitter</span>
+                      </a>
+                    )}
                 </div>
               </div>
             </Card>
 
             {/* Quick Actions */}
             <Card className="p-6">
-              <h4 className="font-semibold text-gray-900 mb-4">{t("Contact.quickActions") || "Quick Actions"}</h4>
+              <h4 className="font-semibold text-gray-900 mb-4">
+                {t("Contact.quickActions") || "Quick Actions"}
+              </h4>
               <div className="space-y-3">
                 <Button className="w-full justify-start" variant="ghost">
                   <Calendar className="w-4 h-4 mr-2" />
@@ -339,15 +411,20 @@ const Contact: React.FC = () => {
                 {t("Contact.sendMessage") || "Send me a message"}
               </h3>
               <p className="text-gray-600">
-                {t("Contact.formDescription") || "Fill out the form below and I'll get back to you as soon as possible."}
+                {t("Contact.formDescription") ||
+                  "Fill out the form below and I'll get back to you as soon as possible."}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("Contact.name") || "Full Name"} <span className="text-red-500">*</span>
+                  <label
+                    htmlFor="name"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    {t("Contact.name") || "Full Name"}{" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -358,10 +435,12 @@ const Contact: React.FC = () => {
                     onBlur={handleBlur}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                       errors.name && touched.name
-                        ? 'border-red-300 bg-red-50'
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder={t("Contact.yourName") || "Enter your full name"}
+                    placeholder={
+                      t("Contact.yourName") || "Enter your full name"
+                    }
                   />
                   {errors.name && touched.name && (
                     <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
@@ -372,8 +451,12 @@ const Contact: React.FC = () => {
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("Contact.email") || "Email Address"} <span className="text-red-500">*</span>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    {t("Contact.email") || "Email Address"}{" "}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="email"
@@ -384,10 +467,12 @@ const Contact: React.FC = () => {
                     onBlur={handleBlur}
                     className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                       errors.email && touched.email
-                        ? 'border-red-300 bg-red-50'
-                        : 'border-gray-300 hover:border-gray-400'
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-300 hover:border-gray-400"
                     }`}
-                    placeholder={t("Contact.yourEmail") || "Enter your email address"}
+                    placeholder={
+                      t("Contact.yourEmail") || "Enter your email address"
+                    }
                   />
                   {errors.email && touched.email && (
                     <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
@@ -400,7 +485,10 @@ const Contact: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="projectType" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label
+                    htmlFor="projectType"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
                     {t("Contact.projectType") || "Project Type"}
                   </label>
                   <select
@@ -410,39 +498,35 @@ const Contact: React.FC = () => {
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                   >
-                    <option value="">{t("Contact.selectProjectType") || "Select project type"}</option>
-                    <option value="web-development">{t("Contact.webDevelopment") || "Web Development"}</option>
-                    <option value="mobile-app">{t("Contact.mobileApp") || "Mobile App"}</option>
-                    <option value="ui-ux-design">{t("Contact.uiUxDesign") || "UI/UX Design"}</option>
-                    <option value="consulting">{t("Contact.consulting") || "Consulting"}</option>
-                    <option value="other">{t("Contact.other") || "Other"}</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="budget" className="block text-sm font-medium text-gray-700 mb-2">
-                    {t("Contact.budget") || "Budget Range"}
-                  </label>
-                  <select
-                    id="budget"
-                    name="budget"
-                    value={formData.budget}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                  >
-                    <option value="">{t("Contact.selectBudget") || "Select budget range"}</option>
-                    <option value="under-5k">{t("Contact.under5k") || "Under $5,000"}</option>
-                    <option value="5k-10k">{t("Contact.5kTo10k") || "$5,000 - $10,000"}</option>
-                    <option value="10k-25k">{t("Contact.10kTo25k") || "$10,000 - $25,000"}</option>
-                    <option value="25k-50k">{t("Contact.25kTo50k") || "$25,000 - $50,000"}</option>
-                    <option value="50k-plus">{t("Contact.50kPlus") || "$50,000+"}</option>
+                    <option value="">
+                      {t("Contact.selectProjectType") || "Select project type"}
+                    </option>
+                    <option value="web-development">
+                      {t("Contact.webDevelopment") || "Web Development"}
+                    </option>
+                    <option value="mobile-app">
+                      {t("Contact.mobileApp") || "Mobile App"}
+                    </option>
+                    <option value="ui-ux-design">
+                      {t("Contact.uiUxDesign") || "UI/UX Design"}
+                    </option>
+                    <option value="consulting">
+                      {t("Contact.consulting") || "Consulting"}
+                    </option>
+                    <option value="other">
+                      {t("Contact.other") || "Other"}
+                    </option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("Contact.subject") || "Subject"} <span className="text-red-500">*</span>
+                <label
+                  htmlFor="subject"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t("Contact.subject") || "Subject"}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -453,10 +537,12 @@ const Contact: React.FC = () => {
                   onBlur={handleBlur}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${
                     errors.subject && touched.subject
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300 hover:border-gray-400"
                   }`}
-                  placeholder={t("Contact.subjectPlaceholder") || "What's this about?"}
+                  placeholder={
+                    t("Contact.subjectPlaceholder") || "What's this about?"
+                  }
                 />
                 {errors.subject && touched.subject && (
                   <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
@@ -467,8 +553,12 @@ const Contact: React.FC = () => {
               </div>
 
               <div>
-                <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
-                  {t("Contact.message") || "Message"} <span className="text-red-500">*</span>
+                <label
+                  htmlFor="message"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
+                  {t("Contact.message") || "Message"}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="message"
@@ -479,10 +569,13 @@ const Contact: React.FC = () => {
                   onBlur={handleBlur}
                   className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors resize-none ${
                     errors.message && touched.message
-                      ? 'border-red-300 bg-red-50'
-                      : 'border-gray-300 hover:border-gray-400'
+                      ? "border-red-300 bg-red-50"
+                      : "border-gray-300 hover:border-gray-400"
                   }`}
-                  placeholder={t("Contact.messagePlaceholder") || "Tell me about your project, goals, timeline, and any specific requirements..."}
+                  placeholder={
+                    t("Contact.messagePlaceholder") ||
+                    "Tell me about your project, goals, timeline, and any specific requirements..."
+                  }
                 />
                 {errors.message && touched.message && (
                   <div className="flex items-center gap-1 mt-1 text-sm text-red-600">
@@ -514,9 +607,10 @@ const Contact: React.FC = () => {
                     </>
                   )}
                 </Button>
-                
+
                 <p className="text-sm text-gray-500 text-center mt-3">
-                  {t("Contact.responsePromise") || "I'll get back to you within 24 hours."}
+                  {t("Contact.responsePromise") ||
+                    "I'll get back to you within 24 hours."}
                 </p>
               </div>
             </form>

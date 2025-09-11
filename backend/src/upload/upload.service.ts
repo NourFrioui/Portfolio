@@ -114,8 +114,9 @@ export class UploadService {
       'image/png',
       'image/gif',
       'image/webp',
+      'image/svg+xml',
       'application/pdf',
     ];
     return allowedMimes.includes(file.mimetype);
   }
-}
+} // <-- Missing closing brace for class
