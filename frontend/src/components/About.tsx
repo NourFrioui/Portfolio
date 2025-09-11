@@ -131,7 +131,7 @@ const About: React.FC = () => {
             <div className="flex flex-wrap gap-3">
               {userProfile?.availableForWork && (
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                  ✅ {t("About.available", { default: "Available for work" })}
+                  ✅ {t("About.availableForWork")}
                 </span>
               )}
               {typeof userProfile?.hourlyRate === "number" && (
@@ -172,7 +172,7 @@ const About: React.FC = () => {
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <a href="#contact" className="btn btn-primary">
-                {t("Contact.cta", { default: "Contact me" })}
+                {t("Hero.cta")}
               </a>
               {userProfile?.resumeUrl && (
                 <a
@@ -181,7 +181,7 @@ const About: React.FC = () => {
                   rel="noopener noreferrer"
                   className="btn btn-secondary"
                 >
-                  {t("About.downloadCV", { default: "Download CV (PDF)" })}
+                  {t("Hero.downloadCV")}
                 </a>
               )}
             </div>

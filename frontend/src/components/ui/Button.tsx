@@ -1,17 +1,15 @@
-"use client";
-
-import React from "react";
-import { motion } from "framer-motion";
+import React, { ReactNode } from "react";
+import { motion, HTMLMotionProps } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
-
 type Size = "sm" | "md" | "lg";
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+interface ButtonProps extends HTMLMotionProps<"button"> {
   variant?: Variant;
   size?: Size;
   loading?: boolean;
+  children?: ReactNode; // 👈 forcer en ReactNode
 }
 
 const base =
@@ -43,7 +41,7 @@ export const Button: React.FC<ButtonProps> = ({
   ...props
 }) => {
   const isDisabled = disabled || loading;
-  
+
   return (
     <motion.button
       type={type}
@@ -54,7 +52,7 @@ export const Button: React.FC<ButtonProps> = ({
       {...props}
     >
       {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-      {children}
+      {children as ReactNode} 
     </motion.button>
   );
 };
