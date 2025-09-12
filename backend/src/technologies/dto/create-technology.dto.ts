@@ -7,14 +7,20 @@ import {
   Min,
   IsBoolean,
   IsMongoId,
+  ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Type, Transform } from 'class-transformer';
+import { LocalizedStringDto } from '../../common/dto/localized-string.dto';
+import { toLocalized } from '../../common/transformers/to-localized.transformer';
 
 export class CreateTechnologyDto {
-  @ApiProperty()
+  @ApiProperty({ type: LocalizedStringDto })
   @IsNotEmpty()
-  @IsString()
-  name: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  name: LocalizedStringDto;
 
   @ApiProperty({ minimum: 0, maximum: 100 })
   @IsNumber()
@@ -31,12 +37,14 @@ export class CreateTechnologyDto {
   icon?: string;
 
   @ApiPropertyOptional({
-    description: 'Technology description',
-    example: 'A JavaScript library for building user interfaces',
+    description: 'Technology description (localized)',
+    type: LocalizedStringDto,
   })
   @IsOptional()
-  @IsString()
-  description?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  description?: LocalizedStringDto;
 
   @ApiPropertyOptional({
     description: 'Category ID',

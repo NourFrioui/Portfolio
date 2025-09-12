@@ -6,32 +6,38 @@ export type ProjectDocument = Project & Document;
 
 @Schema({ timestamps: true })
 export class Project {
-  @ApiProperty({
-    description: 'Project title',
-    example: 'E-commerce Platform',
+  @ApiProperty({ description: 'Project title (localized)' })
+  @Prop({
+    type: {
+      en: { type: String, required: true },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: true,
   })
-  @Prop({ required: true })
-  title: string;
+  title: { en: string; fr?: string };
 
-  @ApiProperty({
-    description: 'Project description',
-    example: 'A full-stack e-commerce platform built with React and Node.js',
+  @ApiProperty({ description: 'Project description (localized)' })
+  @Prop({
+    type: {
+      en: { type: String, required: true },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: true,
   })
-  @Prop({ required: true })
-  description: string;
+  description: { en: string; fr?: string };
 
-  @ApiProperty({ description: 'Long description', required: false })
-  @Prop()
-  longDescription?: string;
+  @ApiProperty({ description: 'Long description (localized)', required: false })
+  @Prop({ type: { en: String, fr: String }, _id: false })
+  longDescription?: { en?: string; fr?: string };
 
   @ApiProperty({
-    description: 'Detailed project description',
-    example:
-      'This project includes user authentication, payment processing, inventory management...',
+    description: 'Detailed project description (localized)',
     required: false,
   })
-  @Prop()
-  detailedDescription?: string;
+  @Prop({ type: { en: String, fr: String }, _id: false })
+  detailedDescription?: { en?: string; fr?: string };
 
   @ApiProperty({
     description: 'Category ID',
@@ -61,20 +67,20 @@ export class Project {
   images?: string[];
 
   @ApiProperty({
-    description: 'Technologies used in the project',
-    example: ['React', 'Node.js', 'MongoDB', 'Express'],
+    description: 'Technology IDs used in the project',
+    example: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'],
     required: false,
   })
-  @Prop([String])
-  technologies?: string[];
+  @Prop([{ type: Types.ObjectId, ref: 'Technology' }])
+  technologyIds?: Types.ObjectId[];
 
   @ApiProperty({
-    description: 'Tags for the project',
-    example: ['ecommerce', 'fullstack', 'nextjs'],
+    description: 'Tag IDs for the project',
+    example: ['507f1f77bcf86cd799439013', '507f1f77bcf86cd799439014'],
     required: false,
   })
-  @Prop([String])
-  tags?: string[];
+  @Prop([{ type: Types.ObjectId, ref: 'Tag' }])
+  tagIds?: Types.ObjectId[];
 
   @ApiProperty({
     description: 'Project features',
@@ -130,10 +136,13 @@ export class Project {
     },
     additionalProperties: false,
   })
-  @Prop({ type: { size: Number, role: String }, _id: false })
+  @Prop({
+    type: { size: Number, role: { en: String, fr: String } },
+    _id: false,
+  })
   team?: {
     size?: number;
-    role?: string;
+    role?: { en?: string; fr?: string };
   };
 
   @ApiProperty({
@@ -145,9 +154,13 @@ export class Project {
       { metric: 'Performance Improvement', value: '40%' },
     ],
   })
-  @Prop({ type: [{ metric: String, value: String }], _id: false, default: [] })
+  @Prop({
+    type: [{ metric: { en: String, fr: String }, value: String }],
+    _id: false,
+    default: [],
+  })
   results?: Array<{
-    metric: string;
+    metric: { en?: string; fr?: string };
     value: string;
   }>;
 
@@ -163,16 +176,16 @@ export class Project {
   })
   @Prop({
     type: {
-      text: { type: String },
-      author: { type: String },
-      position: { type: String },
+      text: { en: String, fr: String },
+      author: { en: String, fr: String },
+      position: { en: String, fr: String },
     },
     _id: false,
   })
   clientTestimonial?: {
-    text: string;
-    author: string;
-    position?: string;
+    text?: { en?: string; fr?: string };
+    author?: { en?: string; fr?: string };
+    position?: { en?: string; fr?: string };
   };
 
   @ApiProperty({
@@ -267,4 +280,8 @@ export class Project {
 
 export const ProjectSchema = SchemaFactory.createForClass(Project);
 ProjectSchema.index({ createdAt: -1 });
-ProjectSchema.index({ title: 'text', description: 'text', category: 1 });
+ProjectSchema.index({
+  'title.en': 'text',
+  'description.en': 'text',
+  category: 1,
+});

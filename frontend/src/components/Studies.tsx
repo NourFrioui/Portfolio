@@ -3,28 +3,15 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "@/hooks/useTranslations";
-import { 
-  AcademicCapIcon, 
-  CalendarIcon, 
+import {
+  AcademicCapIcon,
+  CalendarIcon,
   MapPinIcon,
   TrophyIcon,
-  BookOpenIcon
+  BookOpenIcon,
 } from "@heroicons/react/24/outline";
-
-type Study = {
-  _id: string;
-  degree: string;
-  institution: string;
-  location: string;
-  startDate: string;
-  endDate?: string;
-  current: boolean;
-  description: string;
-  gpa?: string;
-  honors?: string[];
-  coursework?: string[];
-  logo?: string;
-};
+import { getLocalizedText } from "@/utils/localization";
+import { Study } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
@@ -33,33 +20,79 @@ const Studies: React.FC = () => {
   const [studies, setStudies] = useState<Study[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Fallback data
+  const [currentLanguage, setCurrentLanguage] = useState<"en" | "fr">("en"); // NEW
+
+  // Fallback data with proper localized structure
   const fallbackStudies: Study[] = [
     {
       _id: "1",
-      degree: "Master's in Computer Science",
-      institution: "University of Technology",
-      location: "Paris, France",
+      degree: {
+        en: "Master's in Computer Science",
+        fr: "Master en Informatique",
+      },
+      institution: {
+        en: "University of Technology",
+        fr: "Université de Technologie",
+      },
+      field: { en: "Computer Science", fr: "Informatique" },
+      location: { en: "Paris, France", fr: "Paris, France" },
       startDate: "2020-09-01",
       endDate: "2022-06-30",
-      current: false,
-      description: "Specialized in Software Engineering and Web Technologies with focus on modern development frameworks and methodologies.",
-      gpa: "3.8/4.0",
-      honors: ["Magna Cum Laude", "Dean's List"],
-      coursework: ["Advanced Web Development", "Database Systems", "Software Architecture", "Machine Learning"]
+      isCurrent: false,
+      description: {
+        en: "Specialized in Software Engineering and Web Technologies with focus on modern development frameworks and methodologies.",
+        fr: "Spécialisation en ingénierie logicielle et technologies web, avec un accent sur les frameworks modernes et les méthodologies de développement.",
+      },
+      grade: "3.8/4.0",
+      honors: [
+        { en: "Magna Cum Laude", fr: "Magna Cum Laude" },
+        { en: "Dean's List", fr: "Liste du Doyen" },
+      ],
+      subjects: [
+        { en: "Advanced Web Development", fr: "Développement Web Avancé" },
+        { en: "Database Systems", fr: "Systèmes de Base de Données" },
+        { en: "Software Architecture", fr: "Architecture Logicielle" },
+        { en: "Machine Learning", fr: "Apprentissage Automatique" },
+      ],
+      order: 1,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     },
     {
       _id: "2",
-      degree: "Bachelor's in Information Technology",
-      institution: "Institute of Technology",
-      location: "Lyon, France",
+      degree: {
+        en: "Bachelor's in Information Technology",
+        fr: "Licence en Technologies de l'Information",
+      },
+      institution: {
+        en: "Institute of Technology",
+        fr: "Institut de Technologie",
+      },
+      field: {
+        en: "Information Technology",
+        fr: "Technologies de l'Information",
+      },
+      location: { en: "Lyon, France", fr: "Lyon, France" },
       startDate: "2017-09-01",
       endDate: "2020-06-30",
-      current: false,
-      description: "Comprehensive foundation in computer science principles, programming languages, and system design.",
-      gpa: "3.6/4.0",
-      coursework: ["Data Structures", "Algorithms", "Web Programming", "Network Security"]
-    }
+      isCurrent: false,
+      description: {
+        en: "Comprehensive foundation in computer science principles, programming languages, and system design.",
+        fr: "Base solide en principes d'informatique, langages de programmation et conception de systèmes.",
+      },
+      grade: "3.6/4.0",
+      subjects: [
+        { en: "Data Structures", fr: "Structures de Données" },
+        { en: "Algorithms", fr: "Algorithmes" },
+        { en: "Web Programming", fr: "Programmation Web" },
+        { en: "Network Security", fr: "Sécurité Réseau" },
+      ],
+      order: 2,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    },
   ];
 
   useEffect(() => {
@@ -85,10 +118,14 @@ const Studies: React.FC = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-    });
+    return date.toLocaleDateString(
+      currentLanguage === "fr" ? "fr-FR" : "en-US",
+      {
+        // NEW
+        year: "numeric",
+        month: "short",
+      }
+    );
   };
 
   if (loading) {
@@ -98,15 +135,6 @@ const Studies: React.FC = () => {
           <div className="text-center mb-16">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-64 mx-auto mb-4 animate-pulse"></div>
             <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-96 mx-auto animate-pulse"></div>
-          </div>
-          <div className="space-y-8">
-            {[1, 2].map((i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg animate-pulse">
-                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-              </div>
-            ))}
           </div>
         </div>
       </section>
@@ -129,105 +157,63 @@ const Studies: React.FC = () => {
           <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             {t("subtitle")}
           </p>
+
+          {/* Language Switcher (optionnel) */}
+          <div className="flex justify-center mt-6">
+            <div className="flex bg-gray-200 rounded-lg p-1">
+              <button
+                onClick={() => setCurrentLanguage("en")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  currentLanguage === "en"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                English
+              </button>
+              <button
+                onClick={() => setCurrentLanguage("fr")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  currentLanguage === "fr"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Français
+              </button>
+            </div>
+          </div>
         </motion.div>
 
         <div className="max-w-4xl mx-auto">
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 to-purple-600"></div>
+          {studies.map((study, index) => (
+            <motion.div
+              key={study._id}
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: index * 0.2 }}
+              className="relative mb-12 last:mb-0"
+            >
+              <div className="ml-20 bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
+                  <AcademicCapIcon className="w-6 h-6 mr-2 text-blue-500" />
+                  {getLocalizedText(study.degree, currentLanguage)}
+                </h3>
+                <p className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
+                  {getLocalizedText(study.institution, currentLanguage)}
+                </p>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  {getLocalizedText(study.field, currentLanguage)} •{" "}
+                  {getLocalizedText(study.location, currentLanguage)}
+                </p>
 
-            {studies.map((study, index) => (
-              <motion.div
-                key={study._id}
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
-                className="relative mb-12 last:mb-0"
-              >
-                {/* Timeline dot */}
-                <div className="absolute left-6 w-4 h-4 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full border-4 border-white dark:border-gray-900 shadow-lg"></div>
-
-                {/* Content card */}
-                <div className="ml-20 bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between mb-6">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 flex items-center">
-                        <AcademicCapIcon className="w-6 h-6 mr-2 text-blue-500" />
-                        {study.degree}
-                      </h3>
-                      <p className="text-lg font-semibold text-blue-600 dark:text-blue-400 mb-2">
-                        {study.institution}
-                      </p>
-                      <div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-300 mb-4">
-                        <span className="flex items-center">
-                          <MapPinIcon className="w-4 h-4 mr-1" />
-                          {study.location}
-                        </span>
-                        <span className="flex items-center">
-                          <CalendarIcon className="w-4 h-4 mr-1" />
-                          {formatDate(study.startDate)} - {study.current ? t("present") : formatDate(study.endDate!)}
-                        </span>
-                      </div>
-                    </div>
-
-                    {study.gpa && (
-                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 lg:ml-6">
-                        <p className="text-sm font-medium text-gray-600 dark:text-gray-300 mb-1">
-                          {t("gpa")}
-                        </p>
-                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                          {study.gpa}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
-                    {study.description}
-                  </p>
-
-                  {study.honors && study.honors.length > 0 && (
-                    <div className="mb-6">
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                        <TrophyIcon className="w-5 h-5 mr-2 text-yellow-500" />
-                        {t("honors")}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {study.honors.map((honor, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 rounded-full text-sm font-medium"
-                          >
-                            {honor}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {study.coursework && study.coursework.length > 0 && (
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3 flex items-center">
-                        <BookOpenIcon className="w-5 h-5 mr-2 text-green-500" />
-                        {t("coursework")}
-                      </h4>
-                      <div className="flex flex-wrap gap-2">
-                        {study.coursework.map((course, idx) => (
-                          <span
-                            key={idx}
-                            className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded-full text-sm"
-                          >
-                            {course}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                  {getLocalizedText(study.description, currentLanguage)}
+                </p>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

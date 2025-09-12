@@ -11,7 +11,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Global validation pipe
-  app.useGlobalPipes(
+  /*/ app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -20,7 +20,7 @@ async function bootstrap() {
         enableImplicitConversion: true,
       },
     }),
-  );
+  );*/
 
   // Global exception filters
   app.useGlobalFilters(new AllExceptionsFilter(), new HttpExceptionFilter());

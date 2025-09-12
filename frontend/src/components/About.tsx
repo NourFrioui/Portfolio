@@ -1,11 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { MapPin, Calendar, Award, Users } from "lucide-react";
 import api from "../utils/api";
-import ImageDisplay from "./ImageDisplay";
-import { isValidImageUrl, getImageUrl } from "../utils/imageUtils";
 import { useTranslations } from "../hooks/useTranslations";
 
 interface UserProfile {
@@ -48,7 +44,7 @@ const About: React.FC = () => {
           title: "Full Stack Developer",
           bio: "Passionate developer with expertise in modern web technologies",
           description:
-            "I am a dedicated full-stack developer with a passion for creating innovative web solutions. With expertise in modern technologies and a commitment to clean, efficient code, I help businesses build robust digital experiences.",
+            "I am a dedicated full-stack developer with a passion for creating innovative web solutions...",
           yearsOfExperience: 5,
           skills: [
             "React & Next.js",
@@ -59,6 +55,7 @@ const About: React.FC = () => {
           location: "Your Location",
           resumeUrl: "/upload/pdfs/sample.pdf",
           availableForWork: true,
+          hourlyRate: 50,
         });
       } finally {
         setLoading(false);
@@ -87,6 +84,17 @@ const About: React.FC = () => {
     "bg-indigo-100 text-indigo-800",
   ];
 
+  const skills = userProfile?.skills || [
+    "React & Next.js",
+    "Node.js & Express",
+    "TypeScript",
+    "MongoDB & PostgreSQL",
+    "NestJS",
+    "Odoo",
+    "PostgreSQL",
+    "Docker",
+  ];
+
   return (
     <section id="about" className="py-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -94,8 +102,8 @@ const About: React.FC = () => {
           {t("About.title")}
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* LEFT */}
           <div className="space-y-6">
-            {/* Bio - Short introduction */}
             {userProfile?.bio && (
               <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
                 <span className="font-semibold">
@@ -107,10 +115,10 @@ const About: React.FC = () => {
               </div>
             )}
 
-            {/* Description - Detailed about me */}
             <p className="text-lg text-gray-700 leading-relaxed">
               {userProfile?.description || t("About.fallbackDescription")}
             </p>
+
             {userProfile?.yearsOfExperience && (
               <p className="text-lg text-gray-700 leading-relaxed">
                 {t("About.experienceText").replace(
@@ -119,6 +127,7 @@ const About: React.FC = () => {
                 )}
               </p>
             )}
+
             {userProfile?.location && (
               <p className="text-lg text-gray-700 leading-relaxed">
                 {t("About.locationText").replace(
@@ -127,14 +136,15 @@ const About: React.FC = () => {
                 )}
               </p>
             )}
-            {/* Quick facts & Availability */}
+
+            {/* Badges */}
             <div className="flex flex-wrap gap-3">
               {userProfile?.availableForWork && (
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                   ✅ {t("About.availableForWork")}
                 </span>
               )}
-              {typeof userProfile?.hourlyRate === "number" && (
+              {userProfile?.hourlyRate && userProfile.hourlyRate > 0 && (
                 <span className="px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                   💼 {userProfile.hourlyRate} €/h
                 </span>
@@ -149,64 +159,28 @@ const About: React.FC = () => {
               )}
             </div>
 
-            {/* Technologies - Auto scroll horizontal */}
-            <div>
-             
-
-              <div className="relative overflow-hidden border border-gray-200 rounded-lg bg-gray-50/60 p-3">
-                <div className="flex gap-3 animate-scroll">
-                  {(userProfile?.skills || [
-                    "React & Next.js",
-                    "Node.js & Express",
-                    "TypeScript",
-                    "MongoDB & PostgreSQL",
-                    "NestJS",
-                    "Odoo",
-                    "PostgreSQL",
-                    "Docker",
-                  ]).map((skill, index) => (
-                    <div
-                      key={skill}
-                      className="flex items-center gap-2 bg-white rounded-md border border-gray-100 px-3 py-2 shadow-sm min-w-[150px] shrink-0"
+            {/* SKILLS CAROUSEL */}
+            <div className="relative overflow-hidden border border-gray-200 rounded-lg bg-gray-50/60 p-3">
+              <div className="flex gap-3 animate-scroll">
+                {[...skills, ...skills].map((skill, index) => (
+                  <div
+                    key={`${skill}-${index}`}
+                    className="flex items-center gap-2 bg-white rounded-md border border-gray-100 px-3 py-2 shadow-sm min-w-[150px] shrink-0"
+                  >
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                        skillColors[index % skillColors.length]
+                      }`}
                     >
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${skillColors[index % skillColors.length]}`}
-                      >
-                        ●
-                      </span>
-                      <span className="text-sm text-gray-800 truncate">{skill}</span>
-                    </div>
-                  ))}
-
-                  {/* Clone des items pour effet boucle infinie */}
-                  {(userProfile?.skills || [
-                    "React & Next.js",
-                    "Node.js & Express",
-                    "TypeScript",
-                    "MongoDB & PostgreSQL",
-                    "NestJS",
-                    "Odoo",
-                    "PostgreSQL",
-                    "Docker",
-                  ]).map((skill, index) => (
-                    <div
-                      key={`${skill}-clone`}
-                      className="flex items-center gap-2 bg-white rounded-md border border-gray-100 px-3 py-2 shadow-sm min-w-[150px] shrink-0"
-                    >
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${skillColors[index % skillColors.length]}`}
-                      >
-                        ●
-                      </span>
-                      <span className="text-sm text-gray-800 truncate">{skill}</span>
-                    </div>
-                  ))}
-                </div>
+                      ●
+                    </span>
+                    <span className="text-sm text-gray-800 truncate">
+                      {skill}
+                    </span>
+                  </div>
+                ))}
               </div>
-
             </div>
-
-
 
             {/* Actions */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -225,15 +199,17 @@ const About: React.FC = () => {
               )}
             </div>
           </div>
+
+          {/* RIGHT */}
           <div className="flex justify-center">
             {userProfile?.profileImageUrl ? (
               <img
                 src={userProfile.profileImageUrl}
                 alt={userProfile?.fullName || "Profile"}
-                className="w-80 h-80 rounded-full object-cover border-4 border-blue-200"
+                className="w-64 h-64 sm:w-80 sm:h-80 rounded-full object-cover border-4 border-blue-200"
               />
             ) : (
-              <div className="w-80 h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-6xl">
+              <div className="w-64 h-64 sm:w-80 sm:h-80 bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white text-6xl">
                 💻
               </div>
             )}

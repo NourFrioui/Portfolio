@@ -6,11 +6,14 @@ import {
   IsArray,
   IsUrl,
   IsEmail,
+  ValidateNested,
 } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { LocalizedStringDto } from '../../common/dto/localized-string.dto';
+import { toLocalized } from '../../common/transformers/to-localized.transformer';
 
 export class UpdateProfileDto {
   @IsOptional()
-  @IsString()
   username?: string;
 
   @IsOptional()
@@ -18,39 +21,43 @@ export class UpdateProfileDto {
   email?: string;
 
   @IsOptional()
-  @IsString()
-  fullName?: string;
+  @Transform(toLocalized)
+  fullName?: string | LocalizedStringDto;
 
   @IsOptional()
-  @IsString()
-  title?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  title?: LocalizedStringDto;
 
   @IsOptional()
-  @IsString()
-  bio?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  bio?: LocalizedStringDto;
 
   @IsOptional()
-  @IsString()
-  description?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  description?: LocalizedStringDto;
 
   @IsOptional()
-  @IsString()
-  location?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  location?: LocalizedStringDto;
 
   @IsOptional()
-  @IsString()
   phone?: string;
 
   @IsOptional()
-  @IsUrl()
   website?: string;
 
   @IsOptional()
-  @IsUrl()
   linkedin?: string;
 
   @IsOptional()
-  @IsUrl()
   github?: string;
 
   @IsOptional()
@@ -78,12 +85,14 @@ export class UpdateProfileDto {
   hourlyRate?: string;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  skills?: string[];
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested({ each: true })
+  skills?: LocalizedStringDto[];
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  languages?: string[];
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested({ each: true })
+  languages?: LocalizedStringDto[];
 }

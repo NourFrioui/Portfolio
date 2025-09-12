@@ -6,12 +6,16 @@ export type TechnologyDocument = Technology & Document;
 
 @Schema({ timestamps: true })
 export class Technology {
-  @ApiProperty({
-    description: 'Technology name',
-    example: 'React',
+  @ApiProperty({ description: 'Technology name (localized)' })
+  @Prop({
+    type: {
+      en: { type: String, required: true },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: true,
   })
-  @Prop({ required: true, unique: true })
-  name: string;
+  name: { en: string; fr?: string };
 
   @ApiProperty({
     description: 'Proficiency percentage',
@@ -29,12 +33,11 @@ export class Technology {
   icon?: string;
 
   @ApiProperty({
-    description: 'Technology description',
-    example: 'A JavaScript library for building user interfaces',
+    description: 'Technology description (localized)',
     required: false,
   })
-  @Prop()
-  description?: string;
+  @Prop({ type: { en: String, fr: String }, _id: false })
+  description?: { en?: string; fr?: string };
 
   @ApiProperty({
     description: 'Category ID',
@@ -70,5 +73,5 @@ export class Technology {
 }
 
 export const TechnologySchema = SchemaFactory.createForClass(Technology);
-TechnologySchema.index({ name: 1 });
+TechnologySchema.index({ 'name.en': 1 });
 TechnologySchema.index({ createdAt: -1 });

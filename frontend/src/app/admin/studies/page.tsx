@@ -17,14 +17,29 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
 type Study = {
   _id?: string;
-  degree: string;
-  institution: string;
-  location: string;
+  degree: {
+    en: string;
+    fr: string;
+  };
+  institution: {
+    en: string;
+    fr: string;
+  };
+  location: {
+    en: string;
+    fr: string;
+  };
   startDate: string;
   endDate?: string;
   current: boolean;
-  description: string;
-  gpa?: string;
+  description: {
+    en: string;
+    fr: string;
+  };
+  gpa?: {
+    en: string;
+    fr: string;
+  };
   honors?: string[];
   coursework?: string[];
   logo?: string;
@@ -37,21 +52,19 @@ const StudiesAdminPage: React.FC = () => {
   const [studies, setStudies] = useState<Study[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [currentLang, setCurrentLang] = useState<'en' | 'fr'>('en');
   const [editingStudy, setEditingStudy] = useState<Study | null>(null);
-  const [formData, setFormData] = useState<Study>({
-    degree: "",
-    institution: "",
-    location: "",
-    startDate: "",
-    endDate: "",
+  const [formData, setFormData] = useState<Omit<Study, '_id' | 'createdAt' | 'updatedAt' | '__v'>>({
+    degree: { en: '', fr: '' },
+    institution: { en: '', fr: '' },
+    location: { en: '', fr: '' },
+    startDate: '',
+    endDate: '',
     current: false,
-    description: "",
-    gpa: "",
+    description: { en: '', fr: '' },
+    gpa: { en: '', fr: '' },
     honors: [],
     coursework: [],
-    createdAt: "",
-    updatedAt: "",
-    __v: 0,
   });
 
   useEffect(() => {
@@ -79,12 +92,39 @@ const StudiesAdminPage: React.FC = () => {
       if (!editingStudy) return;
   
       const url = `${API_BASE}/studies/${editingStudy._id}`;
+      
+      // Préparer les données pour l'envoi
+      const dataToSend = {
+        ...formData,
+        // S'assurer que tous les champs localisés sont présents
+        degree: {
+          en: formData.degree.en || '',
+          fr: formData.degree.fr || ''
+        },
+        institution: {
+          en: formData.institution.en || '',
+          fr: formData.institution.fr || ''
+        },
+        location: {
+          en: formData.location.en || '',
+          fr: formData.location.fr || ''
+        },
+        description: {
+          en: formData.description.en || '',
+          fr: formData.description.fr || ''
+        },
+        gpa: formData.gpa ? {
+          en: formData.gpa.en || '',
+          fr: formData.gpa.fr || ''
+        } : undefined,
+        honors: formData.honors || [],
+        coursework: formData.coursework || []
+      };
   
-      // Envoi uniquement formData, sans _id ni timestamps
       const response = await fetch(url, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
   
       if (response.ok) {
@@ -95,7 +135,55 @@ const StudiesAdminPage: React.FC = () => {
       console.error("Error saving study:", error);
     }
   };
-  
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    try {
+      // Préparer les données pour la création
+      const dataToSend = {
+        ...formData,
+        // S'assurer que tous les champs localisés sont présents
+        degree: {
+          en: formData.degree.en || '',
+          fr: formData.degree.fr || ''
+        },
+        institution: {
+          en: formData.institution.en || '',
+          fr: formData.institution.fr || ''
+        },
+        location: {
+          en: formData.location.en || '',
+          fr: formData.location.fr || ''
+        },
+        description: {
+          en: formData.description.en || '',
+          fr: formData.description.fr || ''
+        },
+        gpa: formData.gpa ? {
+          en: formData.gpa.en || '',
+          fr: formData.gpa.fr || ''
+        } : undefined,
+        honors: formData.honors || [],
+        coursework: formData.coursework || []
+      };
+
+      const response = await fetch(`${API_BASE}/studies`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(dataToSend),
+      });
+
+      if (response.ok) {
+        await fetchStudies();
+        resetForm();
+      }
+    } catch (error) {
+      console.error('Error creating study:', error);
+    }
+  };
 
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this study?")) {
@@ -115,14 +203,14 @@ const StudiesAdminPage: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
-      degree: "",
-      institution: "",
-      location: "",
-      startDate: "",
-      endDate: "",
+      degree: { en: '', fr: '' },
+      institution: { en: '', fr: '' },
+      location: { en: '', fr: '' },
+      startDate: '',
+      endDate: '',
       current: false,
-      description: "",
-      gpa: "",
+      description: { en: '', fr: '' },
+      gpa: { en: '', fr: '' },
       honors: [],
       coursework: [],
     });
@@ -138,10 +226,18 @@ const StudiesAdminPage: React.FC = () => {
       ...cleanStudy,
       startDate: cleanStudy.startDate ? cleanStudy.startDate.split('T')[0] : '',
       endDate: cleanStudy.endDate ? cleanStudy.endDate.split('T')[0] : '',
+      // S'assurer que tous les champs localisés sont correctement initialisés
+      degree: cleanStudy.degree || { en: '', fr: '' },
+      institution: cleanStudy.institution || { en: '', fr: '' },
+      location: cleanStudy.location || { en: '', fr: '' },
+      description: cleanStudy.description || { en: '', fr: '' },
+      gpa: cleanStudy.gpa || { en: '', fr: '' },
+      honors: cleanStudy.honors || [],
+      coursework: cleanStudy.coursework || [],
     };
   
-    setFormData(formattedStudy); // pour le formulaire
-    setEditingStudy(study);      // pour l'URL PATCH
+    setFormData(formattedStudy);
+    setEditingStudy(study);
     setShowForm(true);
   };
   
@@ -190,6 +286,24 @@ const StudiesAdminPage: React.FC = () => {
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Onglets de langue */}
+                <div className="flex mb-4 border-b border-gray-200 dark:border-gray-700">
+                  <button
+                    type="button"
+                    className={`py-2 px-4 font-medium ${currentLang === 'en' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setCurrentLang('en')}
+                  >
+                    English
+                  </button>
+                  <button
+                    type="button"
+                    className={`py-2 px-4 font-medium ${currentLang === 'fr' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                    onClick={() => setCurrentLang('fr')}
+                  >
+                    Français
+                  </button>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Degree *
@@ -197,9 +311,15 @@ const StudiesAdminPage: React.FC = () => {
                   <input
                     type="text"
                     required
-                    value={formData.degree}
+                    value={formData.degree[currentLang]}
                     onChange={(e) =>
-                      setFormData({ ...formData, degree: e.target.value })
+                      setFormData({
+                        ...formData,
+                        degree: {
+                          ...formData.degree,
+                          [currentLang]: e.target.value
+                        }
+                      })
                     }
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -212,9 +332,15 @@ const StudiesAdminPage: React.FC = () => {
                   <input
                     type="text"
                     required
-                    value={formData.institution}
+                    value={formData.institution[currentLang]}
                     onChange={(e) =>
-                      setFormData({ ...formData, institution: e.target.value })
+                      setFormData({
+                        ...formData,
+                        institution: {
+                          ...formData.institution,
+                          [currentLang]: e.target.value
+                        }
+                      })
                     }
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -227,9 +353,15 @@ const StudiesAdminPage: React.FC = () => {
                   <input
                     type="text"
                     required
-                    value={formData.location}
+                    value={formData.location[currentLang]}
                     onChange={(e) =>
-                      setFormData({ ...formData, location: e.target.value })
+                      setFormData({
+                        ...formData,
+                        location: {
+                          ...formData.location,
+                          [currentLang]: e.target.value
+                        }
+                      })
                     }
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -294,9 +426,15 @@ const StudiesAdminPage: React.FC = () => {
                   <textarea
                     required
                     rows={4}
-                    value={formData.description}
+                    value={formData.description[currentLang]}
                     onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
+                      setFormData({
+                        ...formData,
+                        description: {
+                          ...formData.description,
+                          [currentLang]: e.target.value
+                        }
+                      })
                     }
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   />
@@ -308,9 +446,15 @@ const StudiesAdminPage: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    value={formData.gpa}
+                    value={formData.gpa?.[currentLang] || ''}
                     onChange={(e) =>
-                      setFormData({ ...formData, gpa: e.target.value })
+                      setFormData({
+                        ...formData,
+                        gpa: {
+                          ...(formData.gpa || { en: '', fr: '' }),
+                          [currentLang]: e.target.value
+                        }
+                      })
                     }
                     placeholder="e.g., 3.8/4.0"
                     className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
@@ -381,13 +525,13 @@ const StudiesAdminPage: React.FC = () => {
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                      {study.degree}
+                      {study.degree.en} / {study.degree.fr}
                     </h3>
                     <p className="text-lg text-blue-600 dark:text-blue-400 font-semibold mb-1">
-                      {study.institution}
+                      {study.institution.en} / {study.institution.fr}
                     </p>
                     <p className="text-gray-600 dark:text-gray-300 mb-2">
-                      {study.location}
+                      {study.location.en} / {study.location.fr}
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
                       {formatDate(study.startDate)} -{" "}
@@ -412,20 +556,29 @@ const StudiesAdminPage: React.FC = () => {
                   </div>
                 </div>
 
-                <p className="text-gray-700 dark:text-gray-300 mb-4">
-                  {study.description}
-                </p>
-
-                {study.gpa && (
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                    <strong>GPA:</strong> {study.gpa}
+                <div className="mb-4">
+                  <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">English:</p>
+                  <p className="text-gray-700 dark:text-gray-300 mb-4">
+                    {study.description.en}
                   </p>
+                  <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">Français:</p>
+                  <p className="text-gray-700 dark:text-gray-300">
+                    {study.description.fr}
+                  </p>
+                </div>
+
+                {(study.gpa?.en || study.gpa?.fr) && (
+                  <div className="mb-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <strong>GPA:</strong> {study.gpa?.en} / {study.gpa?.fr}
+                    </p>
+                  </div>
                 )}
 
                 {study.honors && study.honors.length > 0 && (
                   <div className="mb-2">
                     <strong className="text-sm text-gray-600 dark:text-gray-400">
-                      Honors:
+                      Honors / Distinctions:
                     </strong>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {study.honors.map((honor, idx) => (
@@ -443,13 +596,13 @@ const StudiesAdminPage: React.FC = () => {
                 {study.coursework && study.coursework.length > 0 && (
                   <div>
                     <strong className="text-sm text-gray-600 dark:text-gray-400">
-                      Coursework:
+                      Coursework / Cours:
                     </strong>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {study.coursework.map((course, idx) => (
                         <span
                           key={idx}
-                          className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 rounded text-xs"
+                          className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded text-xs"
                         >
                           {course}
                         </span>

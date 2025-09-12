@@ -2,14 +2,261 @@
 
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../../components/admin/AdminLayout";
+import { getLocalizedText } from "@/utils/localization";
+import { LocalizedText } from "@/types";
 
 // Force dynamic rendering to prevent prerendering issues
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 import PdfUpload from "@/components/admin/PdfUpload";
 import ImageUpload from "@/components/admin/ImageUpload";
 import { toast } from "react-hot-toast";
 import api from "@/utils/api";
 import ProfilePreview from "@/components/admin/ProfilePreview";
+
+import { HydratedDocument, Schema } from 'mongoose';
+import { Prop, Schema as NestSchema, SchemaFactory } from '@nestjs/mongoose';
+import { UserRole } from '../../common/enums/user-role.enum';
+
+export type UserDocument = HydratedDocument<User>;
+
+@NestSchema({ timestamps: true })
+export class User {
+  @Prop({ type: Schema.Types.ObjectId, auto: true })
+  _id: Schema.Types.ObjectId;
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  lastName?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  firstName?: { en?: string; fr?: string };
+
+  @Prop({ required: false })
+  phone: string;
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  address?: { en?: string; fr?: string };
+
+  @Prop({ required: false, unique: true })
+  username: string;
+
+  @Prop({ required: true, unique: true })
+  email: string;
+
+  @Prop({ required: true })
+  password: string;
+
+  @Prop()
+  role: UserRole;
+
+  @Prop()
+  avatar: string;
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  city?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  country?: { en?: string; fr?: string };
+
+  @Prop()
+  zipCode: string;
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  state?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  company?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  jobTitle?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  bio?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  description?: { en?: string; fr?: string };
+
+  @Prop()
+  linkedin: string;
+
+  @Prop()
+  twitter: string;
+
+  @Prop()
+  instagram: string;
+
+  @Prop()
+  facebook: string;
+
+  @Prop()
+  youtube: string;
+
+  @Prop()
+  github: string;
+
+  @Prop()
+  website: string;
+
+  @Prop({ type: [{ en: String, fr: String }], _id: false, default: [] })
+  skills?: Array<{ en?: string; fr?: string }>;
+
+  @Prop({ type: [{ en: String, fr: String }], _id: false, default: [] })
+  experiences?: Array<{ en?: string; fr?: string }>;
+
+  @Prop({ type: [{ en: String, fr: String }], _id: false, default: [] })
+  education?: Array<{ en?: string; fr?: string }>;
+
+  @Prop({ type: [{ en: String, fr: String }], _id: false, default: [] })
+  certifications?: Array<{ en?: string; fr?: string }>;
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  details?: { en?: string; fr?: string };
+
+  @Prop()
+  proImage: string;
+
+  @Prop()
+  CV: string;
+
+  // Portfolio specific fields
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  fullName?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  title?: { en?: string; fr?: string };
+
+  @Prop({
+    type: {
+      en: { type: String, required: false },
+      fr: { type: String, default: '' },
+    },
+    _id: false,
+    required: false,
+  })
+  location?: { en?: string; fr?: string };
+
+  @Prop()
+  profileImageUrl?: string;
+
+  @Prop()
+  resumeUrl?: string;
+
+  @Prop()
+  linkedinUrl?: string;
+
+  @Prop({ default: 0 })
+  yearsOfExperience: number;
+
+  @Prop({ default: true })
+  availableForWork: boolean;
+
+  @Prop()
+  hourlyRate: string;
+
+  @Prop({ type: [{ en: String, fr: String }], _id: false, default: [] })
+  languages?: Array<{ en?: string; fr?: string }>;
+
+  @Prop()
+  refreshToken: string;
+}
+
+export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.index({ 'firstName.en': 1 });
+UserSchema.index({ 'lastName.en': 1 });
+UserSchema.index({ 'title.en': 1 });
+UserSchema.index({ 'bio.en': 1 });
+UserSchema.index({ 'description.en': 1 });
+UserSchema.index({ createdAt: -1 });
 
 export function generateViewport() {
   return {
@@ -34,6 +281,28 @@ import {
 } from "@heroicons/react/24/outline";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
+type LocalizedText = {
+  en?: string;
+  fr?: string;
+};
+
+// 2. Fonction getLocalizedText corrigée pour gérer votre nouvelle structure
+export const getLocalizedText = (
+  text: string | LocalizedText | undefined | null,
+  lang: 'en' | 'fr' = 'en'
+): string => {
+  if (!text) return '';
+  
+  if (typeof text === 'string') return text;
+  
+  if (typeof text === 'object' && text !== null) {
+    // Priorité à la langue demandée, puis fallback vers 'en', puis 'fr'
+    return text[lang] || text.en || text.fr || '';
+  }
+  
+  return '';
+};
+
 
 type UserProfile = {
   _id?: string;
@@ -41,11 +310,11 @@ type UserProfile = {
   email: string;
   role?: string;
   // Portfolio specific fields
-  fullName: string;
-  title: string;
-  bio: string;
-  description: string;
-  location: string;
+  fullName: LocalizedText;
+  title: LocalizedText;
+  bio: LocalizedText;
+  description: LocalizedText;
+  location: LocalizedText;
   phone: string;
   website: string;
   linkedin: string;
@@ -56,8 +325,8 @@ type UserProfile = {
   yearsOfExperience: number;
   availableForWork: boolean;
   hourlyRate: string;
-  skills: string[];
-  languages: string[];
+  skills: LocalizedText[];
+  languages: LocalizedText[];
 };
 
 type Technology = {
@@ -103,17 +372,18 @@ export default function AdminProfilePage() {
   const [completionPercentage, setCompletionPercentage] = useState(0);
   const [technologies, setTechnologies] = useState<Technology[]>([]);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [currentLang, setCurrentLang] = useState<"en" | "fr">("en");
   const [selectedLanguages, setSelectedLanguages] = useState<string[]>([]);
 
   // Form states
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     username: "",
     email: "",
-    fullName: "",
-    title: "",
-    bio: "",
-    description: "",
-    location: "",
+    fullName: { en: "", fr: "" },
+    title: { en: "", fr: "" },
+    bio: { en: "", fr: "" },
+    description: { en: "", fr: "" },
+    location: { en: "", fr: "" },
     phone: "",
     website: "",
     linkedin: "",
@@ -130,6 +400,23 @@ export default function AdminProfilePage() {
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+
+  // Transform string fields to LocalizedText
+  const transformToLocalizedText = (value: any): LocalizedText => {
+    if (typeof value === "string") {
+      return { en: value, fr: "" };
+    }
+    if (typeof value === "object" && value !== null && (value.en || value.fr)) {
+      return { en: value.en || "", fr: value.fr || "" };
+    }
+    return { en: "", fr: "" };
+  };
+
+  // Transform array of strings to array of LocalizedText
+  const transformStringArrayToLocalized = (arr: any[]): LocalizedText[] => {
+    if (!Array.isArray(arr)) return [];
+    return arr.map((item) => transformToLocalizedText(item));
+  };
 
   // Calculate profile completion percentage
   useEffect(() => {
@@ -181,8 +468,23 @@ export default function AdminProfilePage() {
         const profileData = response.data;
 
         console.log("Profile data received:", profileData);
-        setUser(profileData);
-        setFormData(profileData);
+
+        // Transform the profile data to use LocalizedText
+        const transformedProfile = {
+          ...profileData,
+          fullName: transformToLocalizedText(profileData.fullName),
+          title: transformToLocalizedText(profileData.title),
+          bio: transformToLocalizedText(profileData.bio),
+          description: transformToLocalizedText(profileData.description),
+          location: transformToLocalizedText(profileData.location),
+          skills: transformStringArrayToLocalized(profileData.skills || []),
+          languages: transformStringArrayToLocalized(
+            profileData.languages || []
+          ),
+        };
+
+        setUser(transformedProfile);
+        setFormData(transformedProfile);
         setSelectedSkills(profileData.skills || []);
         setSelectedLanguages(profileData.languages || []);
       } catch (error) {
@@ -193,11 +495,11 @@ export default function AdminProfilePage() {
           _id: "default",
           username: "",
           email: "",
-          fullName: "",
-          title: "",
-          bio: "",
-          description: "",
-          location: "",
+          fullName: { en: "", fr: "" },
+          title: { en: "", fr: "" },
+          bio: { en: "", fr: "" },
+          description: { en: "", fr: "" },
+          location: { en: "", fr: "" },
           phone: "",
           website: "",
           linkedin: "",
@@ -236,7 +538,10 @@ export default function AdminProfilePage() {
       ? selectedSkills.filter((skill) => skill !== skillName)
       : [...selectedSkills, skillName];
     setSelectedSkills(newSkills);
-    setFormData((prev) => ({ ...prev, skills: newSkills }));
+
+    // Convert string array to LocalizedText array
+    const localizedSkills = newSkills.map((skill) => ({ en: skill, fr: "" }));
+    setFormData((prev) => ({ ...prev, skills: localizedSkills }));
   };
 
   const handleLanguageToggle = (language: string) => {
@@ -244,7 +549,13 @@ export default function AdminProfilePage() {
       ? selectedLanguages.filter((lang) => lang !== language)
       : [...selectedLanguages, language];
     setSelectedLanguages(newLanguages);
-    setFormData((prev) => ({ ...prev, languages: newLanguages }));
+
+    // Convert string array to LocalizedText array
+    const localizedLanguages = newLanguages.map((lang) => ({
+      en: lang,
+      fr: "",
+    }));
+    setFormData((prev) => ({ ...prev, languages: localizedLanguages }));
   };
 
   const saveProfile = async (e: React.FormEvent) => {
@@ -261,14 +572,10 @@ export default function AdminProfilePage() {
       }
 
       // Only send fields that are allowed in UpdateProfileDto
+      // Testing with basic fields first, then adding multilingual fields one by one
       const allowedFields = [
         "username",
         "email",
-        "fullName",
-        "title",
-        "bio",
-        "description",
-        "location",
         "phone",
         "website",
         "linkedin",
@@ -279,16 +586,39 @@ export default function AdminProfilePage() {
         "yearsOfExperience",
         "availableForWork",
         "hourlyRate",
-        "skills",
-        "languages",
+        "fullName", // Adding one multilingual field to test
       ];
 
-      const cleanFormData = Object.fromEntries(
+      const cleanFormData: any = Object.fromEntries(
         Object.entries(formData).filter(
           ([key, value]) =>
             allowedFields.includes(key) && value !== undefined && value !== null
         )
       );
+
+      // Test with one multilingual field at a time
+      console.log(
+        "Before transformation - formData.fullName:",
+        formData.fullName,
+        typeof formData.fullName
+      );
+      console.log(
+        "Before transformation - cleanFormData.fullName:",
+        cleanFormData.fullName,
+        typeof cleanFormData.fullName
+      );
+
+      if (
+        cleanFormData.fullName &&
+        typeof cleanFormData.fullName === "object"
+      ) {
+        console.log("Transforming fullName object:", cleanFormData.fullName);
+        // Try sending the object as-is to see if the backend accepts it
+        // cleanFormData.fullName = (cleanFormData.fullName as LocalizedText)[currentLang] || "";
+        console.log("Sending fullName object as-is:", cleanFormData.fullName);
+      } else {
+        console.log("fullName is not an object, skipping transformation");
+      }
 
       // Handle profileImageUrl - it's now a string URL, so we can include it in the update
       if (cleanFormData.profileImageUrl) {
@@ -297,14 +627,34 @@ export default function AdminProfilePage() {
       }
 
       console.log("Sending formData:", cleanFormData);
+      console.log(
+        "cleanFormData.fullName:",
+        cleanFormData.fullName,
+        typeof cleanFormData.fullName
+      );
+      console.log("Current language:", currentLang);
       const response = await api.patch(
         `/users/${user._id}/profile`,
         cleanFormData
       );
       const updatedProfile = response.data;
 
-      setUser(updatedProfile);
-      setFormData(updatedProfile);
+      // Transform the updated profile data to use LocalizedText
+      const transformedUpdatedProfile = {
+        ...updatedProfile,
+        fullName: transformToLocalizedText(updatedProfile.fullName),
+        title: transformToLocalizedText(updatedProfile.title),
+        bio: transformToLocalizedText(updatedProfile.bio),
+        description: transformToLocalizedText(updatedProfile.description),
+        location: transformToLocalizedText(updatedProfile.location),
+        skills: transformStringArrayToLocalized(updatedProfile.skills || []),
+        languages: transformStringArrayToLocalized(
+          updatedProfile.languages || []
+        ),
+      };
+
+      setUser(transformedUpdatedProfile);
+      setFormData(transformedUpdatedProfile);
       setMessage({ type: "success", text: "Profile updated successfully!" });
       toast.success("Profile updated successfully!");
     } catch (error: any) {
@@ -547,6 +897,32 @@ export default function AdminProfilePage() {
                       transition={{ duration: 0.3 }}
                       className="space-y-8"
                     >
+                      {/* Language Switcher */}
+                      <div className="flex mb-4 border-b border-gray-200">
+                        <button
+                          type="button"
+                          className={`py-2 px-4 font-medium ${
+                            currentLang === "en"
+                              ? "text-blue-600 border-b-2 border-blue-600"
+                              : "text-gray-500 hover:text-gray-700"
+                          }`}
+                          onClick={() => setCurrentLang("en")}
+                        >
+                          English
+                        </button>
+                        <button
+                          type="button"
+                          className={`py-2 px-4 font-medium ${
+                            currentLang === "fr"
+                              ? "text-blue-600 border-b-2 border-blue-600"
+                              : "text-gray-500 hover:text-gray-700"
+                          }`}
+                          onClick={() => setCurrentLang("fr")}
+                        >
+                          Français
+                        </button>
+                      </div>
+
                       <div className="flex items-center space-x-3 mb-6">
                         <div className="p-3 bg-blue-100 rounded-xl">
                           <UserIcon className="h-6 w-6 text-blue-600" />
@@ -604,14 +980,23 @@ export default function AdminProfilePage() {
                           className="group"
                         >
                           <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-blue-600 transition-colors">
-                            Full Name
+                            Full Name ({currentLang.toUpperCase()})
                           </label>
                           <div className="relative">
                             <input
                               type="text"
-                              value={formData.fullName || ""}
+                              value={formData.fullName?.[currentLang] || ""}
                               onChange={(e) =>
-                                handleInputChange("fullName", e.target.value)
+                                setFormData({
+                                  ...formData,
+                                  fullName: {
+                                    ...(formData.fullName || {
+                                      en: "",
+                                      fr: "",
+                                    }),
+                                    [currentLang]: e.target.value,
+                                  },
+                                })
                               }
                               className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-300 bg-gray-50 hover:bg-white"
                               placeholder="Your full name"
@@ -623,14 +1008,20 @@ export default function AdminProfilePage() {
                           className="group"
                         >
                           <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-blue-600 transition-colors">
-                            Professional Title
+                            Professional Title ({currentLang.toUpperCase()})
                           </label>
                           <div className="relative">
                             <input
                               type="text"
-                              value={formData.title || ""}
+                              value={formData.title?.[currentLang] || ""}
                               onChange={(e) =>
-                                handleInputChange("title", e.target.value)
+                                setFormData({
+                                  ...formData,
+                                  title: {
+                                    ...(formData.title || { en: "", fr: "" }),
+                                    [currentLang]: e.target.value,
+                                  },
+                                })
                               }
                               className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-300 bg-gray-50 hover:bg-white"
                               placeholder="e.g., Full Stack Developer"
@@ -643,14 +1034,23 @@ export default function AdminProfilePage() {
                         >
                           <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-blue-600 transition-colors flex items-center space-x-2">
                             <MapPinIcon className="h-4 w-4" />
-                            <span>Location</span>
+                            <span>Location ({currentLang.toUpperCase()})</span>
                           </label>
                           <div className="relative">
                             <input
                               type="text"
-                              value={formData.location || ""}
+                              value={formData.location?.[currentLang] || ""}
                               onChange={(e) =>
-                                handleInputChange("location", e.target.value)
+                                setFormData({
+                                  ...formData,
+                                  location: {
+                                    ...(formData.location || {
+                                      en: "",
+                                      fr: "",
+                                    }),
+                                    [currentLang]: e.target.value,
+                                  },
+                                })
                               }
                               className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-300 bg-gray-50 hover:bg-white"
                               placeholder="City, Country"
@@ -685,20 +1085,27 @@ export default function AdminProfilePage() {
                           className="group"
                         >
                           <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-blue-600 transition-colors">
-                            Bio (Short Introduction)
+                            Bio (Short Introduction) (
+                            {currentLang.toUpperCase()})
                           </label>
                           <div className="relative">
                             <textarea
-                              value={formData.bio || ""}
+                              value={formData.bio?.[currentLang] || ""}
                               onChange={(e) =>
-                                handleInputChange("bio", e.target.value)
+                                setFormData({
+                                  ...formData,
+                                  bio: {
+                                    ...(formData.bio || { en: "", fr: "" }),
+                                    [currentLang]: e.target.value,
+                                  },
+                                })
                               }
                               rows={3}
                               className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-300 bg-gray-50 hover:bg-white resize-none"
                               placeholder="Brief intro that appears above your name..."
                             />
                             <div className="absolute bottom-3 right-3 text-xs text-gray-400">
-                              {(formData.bio || "").length}/200
+                              {(formData.bio?.[currentLang] || "").length}/200
                             </div>
                           </div>
                         </motion.div>
@@ -708,20 +1115,34 @@ export default function AdminProfilePage() {
                           className="group"
                         >
                           <label className="block text-sm font-semibold text-gray-700 mb-3 group-hover:text-blue-600 transition-colors">
-                            Description (About Me Section)
+                            Description (About Me Section) (
+                            {currentLang.toUpperCase()})
                           </label>
                           <div className="relative">
                             <textarea
-                              value={formData.description || ""}
+                              value={formData.description?.[currentLang] || ""}
                               onChange={(e) =>
-                                handleInputChange("description", e.target.value)
+                                setFormData({
+                                  ...formData,
+                                  description: {
+                                    ...(formData.description || {
+                                      en: "",
+                                      fr: "",
+                                    }),
+                                    [currentLang]: e.target.value,
+                                  },
+                                })
                               }
                               rows={3}
                               className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all duration-300 bg-gray-50 hover:bg-white resize-none"
                               placeholder="Detailed description for About Me section..."
                             />
                             <div className="absolute bottom-3 right-3 text-xs text-gray-400">
-                              {(formData.description || "").length}/500
+                              {
+                                (formData.description?.[currentLang] || "")
+                                  .length
+                              }
+                              /500
                             </div>
                           </div>
                         </motion.div>
@@ -840,16 +1261,24 @@ export default function AdminProfilePage() {
                               <motion.button
                                 key={tech._id}
                                 type="button"
-                                onClick={() => handleSkillToggle(tech.name)}
+                                onClick={() =>
+                                  handleSkillToggle(
+                                    getLocalizedText(tech.name, "en") ||
+                                      tech._id
+                                  )
+                                }
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 className={`p-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                  selectedSkills.includes(tech.name)
+                                  selectedSkills.includes(
+                                    getLocalizedText(tech.name, "en") ||
+                                      tech._id
+                                  )
                                     ? "bg-purple-600 text-white shadow-lg"
                                     : "bg-white text-gray-700 hover:bg-purple-50 border border-gray-200"
                                 }`}
                               >
-                                {tech.name}
+                                {getLocalizedText(tech.name, "en")}
                               </motion.button>
                             ))}
                           </div>
@@ -1123,7 +1552,7 @@ export default function AdminProfilePage() {
             <ProfilePreview
               isOpen={previewMode}
               onClose={() => setPreviewMode(false)}
-              profileData={formData}
+              profileData={formData as any}
             />
           </div>
         </div>

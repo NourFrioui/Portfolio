@@ -12,6 +12,8 @@ import { ExperienceModule } from './experience/experience.module';
 import { CategoryModule } from './category/category.module';
 import { TagsModule } from './tags/tags.module';
 import { StudiesModule } from './studies/studies.module';
+import { ExperiencesModule } from './experiences/experiences.module';
+import { MigrationModule } from './migration/migration.module';
 
 @Module({
   imports: [
@@ -32,6 +34,8 @@ import { StudiesModule } from './studies/studies.module';
     CategoryModule,
     TagsModule,
     StudiesModule,
+    ExperiencesModule,
+    MigrationModule,
   ],
   controllers: [],
   providers: [],

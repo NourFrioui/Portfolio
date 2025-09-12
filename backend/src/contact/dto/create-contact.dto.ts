@@ -5,13 +5,22 @@ import {
   IsOptional,
   IsString,
   MinLength,
+  ValidateNested,
 } from 'class-validator';
+import { Type, Transform } from 'class-transformer';
+import { LocalizedStringDto } from '../../common/dto/localized-string.dto';
+import { toLocalized } from '../../common/transformers/to-localized.transformer';
 
 export class CreateContactDto {
   @IsNotEmpty()
-  @IsString()
-  @ApiProperty({ description: 'The name of the contact' })
-  name: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiProperty({
+    description: 'The name of the contact (localized)',
+    type: LocalizedStringDto,
+  })
+  name: LocalizedStringDto;
 
   @IsNotEmpty()
   @IsEmail()
@@ -24,13 +33,22 @@ export class CreateContactDto {
   subject?: string;
 
   @IsNotEmpty()
-  @IsString()
-  @MinLength(10)
-  @ApiProperty({ description: 'The message of the contact' })
-  message: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiProperty({
+    description: 'The message of the contact (localized)',
+    type: LocalizedStringDto,
+  })
+  message: LocalizedStringDto;
 
   @IsOptional()
-  @IsString()
-  @ApiPropertyOptional({ description: 'Project type' })
-  projectType?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'Project type (localized)',
+    type: LocalizedStringDto,
+  })
+  projectType?: LocalizedStringDto;
 }

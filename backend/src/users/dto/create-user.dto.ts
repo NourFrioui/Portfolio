@@ -1,6 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+  IsEmail,
+  IsNotEmpty,
+  MinLength,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
+import { Type, Transform } from 'class-transformer';
 import { UserRole } from 'src/common/enums/user-role.enum';
+import { LocalizedStringDto } from '../../common/dto/localized-string.dto';
+import { toLocalized } from '../../common/transformers/to-localized.transformer';
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -30,36 +39,78 @@ export class CreateUserDto {
   phone?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'The address of the user' })
-  address?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The address of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  address?: LocalizedStringDto;
 
   @IsOptional()
-  @ApiProperty({ description: 'The city of the user' })
-  city?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The city of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  city?: LocalizedStringDto;
 
   @IsOptional()
-  @ApiProperty({ description: 'The country of the user' })
-  country?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The country of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  country?: LocalizedStringDto;
 
   @IsOptional()
   @ApiProperty({ description: 'The zip code of the user' })
   zipCode?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'The state of the user' })
-  state?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The state of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  state?: LocalizedStringDto;
 
   @IsOptional()
-  @ApiProperty({ description: 'The company of the user' })
-  company?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The company of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  company?: LocalizedStringDto;
 
   @IsOptional()
-  @ApiProperty({ description: 'The job title of the user' })
-  jobTitle?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The job title of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  jobTitle?: LocalizedStringDto;
 
   @IsOptional()
-  @ApiProperty({ description: 'The bio of the user' })
-  bio?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The bio of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  bio?: LocalizedStringDto;
 
   @IsOptional()
   @ApiProperty({ description: 'The linkedin of the user' })
@@ -90,24 +141,54 @@ export class CreateUserDto {
   website?: string;
 
   @IsOptional()
-  @ApiProperty({ description: 'The skills of the user' })
-  skills?: string[];
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested({ each: true })
+  @ApiPropertyOptional({
+    description: 'The skills of the user (localized)',
+    type: [LocalizedStringDto],
+  })
+  skills?: LocalizedStringDto[];
 
   @IsOptional()
-  @ApiProperty({ description: 'The experiences of the user' })
-  experiences?: string[];
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested({ each: true })
+  @ApiPropertyOptional({
+    description: 'The experiences of the user (localized)',
+    type: [LocalizedStringDto],
+  })
+  experiences?: LocalizedStringDto[];
 
   @IsOptional()
-  @ApiProperty({ description: 'The education of the user' })
-  education?: string[];
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested({ each: true })
+  @ApiPropertyOptional({
+    description: 'The education of the user (localized)',
+    type: [LocalizedStringDto],
+  })
+  education?: LocalizedStringDto[];
 
   @IsOptional()
-  @ApiProperty({ description: 'The certifications of the user' })
-  certifications?: string[];
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested({ each: true })
+  @ApiPropertyOptional({
+    description: 'The certifications of the user (localized)',
+    type: [LocalizedStringDto],
+  })
+  certifications?: LocalizedStringDto[];
 
   @IsOptional()
-  @ApiProperty({ description: 'The details of the user' })
-  details?: string;
+  @Type(() => LocalizedStringDto)
+  @Transform(toLocalized)
+  @ValidateNested()
+  @ApiPropertyOptional({
+    description: 'The details of the user (localized)',
+    type: LocalizedStringDto,
+  })
+  details?: LocalizedStringDto;
 
   @IsOptional()
   @ApiProperty({ description: 'The professional image of the user' })

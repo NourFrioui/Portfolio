@@ -10,7 +10,7 @@ import { User } from '../users/entities/user.entity';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
-import { jwtConstants } from 'src/common/constants/auth.constant';
+import { jwtConstants } from '../common/constants/auth.constant';
 
 @Injectable()
 export class AuthService {

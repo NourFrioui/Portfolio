@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import AdminLayout from "../../../components/admin/AdminLayout";
+import { getLocalizedText } from "@/utils/localization";
+import { LocalizedText } from "@/types";
 
 // Force dynamic rendering to prevent prerendering issues
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export function generateViewport() {
   return {
@@ -17,7 +19,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
 type Tag = {
   _id?: string;
-  name: string;
+  name: LocalizedText;
   color?: string;
   isActive?: boolean;
 };
@@ -28,9 +30,15 @@ export default function AdminTagsPage() {
   const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Tag | null>(null);
-  const [form, setForm] = useState<Tag>({ name: "", color: "#3b82f6", isActive: true });
+  const [currentLang, setCurrentLang] = useState<"en" | "fr">("en");
+  const [form, setForm] = useState<Tag>({
+    name: { en: "", fr: "" },
+    color: "#3b82f6",
+    isActive: true,
+  });
 
-  const token = typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
+  const token =
+    typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
 
   const fetchTags = async () => {
     try {
@@ -48,7 +56,7 @@ export default function AdminTagsPage() {
   }, []);
 
   const resetForm = () => {
-    setForm({ name: "", color: "#3b82f6", isActive: true });
+    setForm({ name: { en: "", fr: "" }, color: "#3b82f6", isActive: true });
     setEditing(null);
   };
 
@@ -67,7 +75,9 @@ export default function AdminTagsPage() {
     setLoading(true);
     setError(null);
     try {
-      const url = editing ? `${API_BASE}/tags/${editing._id}` : `${API_BASE}/tags`;
+      const url = editing
+        ? `${API_BASE}/tags/${editing._id}`
+        : `${API_BASE}/tags`;
       const method = editing ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -107,7 +117,9 @@ export default function AdminTagsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Tags Management</h1>
+            <h1 className="text-2xl font-bold text-slate-900">
+              Tags Management
+            </h1>
             <p className="text-slate-600 mt-1">Create and manage tags</p>
           </div>
           <button
@@ -120,25 +132,45 @@ export default function AdminTagsPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">{error}</div>
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {error}
+          </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {tags.map((tag) => (
-            <div key={tag._id} className="modern-card p-6 hover:shadow-lg transition-shadow">
+            <div
+              key={tag._id}
+              className="modern-card p-6 hover:shadow-lg transition-shadow"
+            >
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: tag.color || "#3b82f6" }} />
-                    <h3 className="text-lg font-semibold text-slate-900">{tag.name}</h3>
+                    <div
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: tag.color || "#3b82f6" }}
+                    />
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      {getLocalizedText(tag.name, "en")}
+                    </h3>
                   </div>
-                  <p className="text-slate-600 text-sm">{tag.isActive === false ? "Inactive" : "Active"}</p>
+                  <p className="text-slate-600 text-sm">
+                    {tag.isActive === false ? "Inactive" : "Active"}
+                  </p>
                 </div>
                 <div className="flex gap-2">
-                  <button onClick={() => openModal(tag)} className="text-indigo-600 hover:text-indigo-700 p-1" title="Edit">
+                  <button
+                    onClick={() => openModal(tag)}
+                    className="text-indigo-600 hover:text-indigo-700 p-1"
+                    title="Edit"
+                  >
                     ✏️
                   </button>
-                  <button onClick={() => remove(tag._id)} className="text-red-600 hover:text-red-700 p-1" title="Delete">
+                  <button
+                    onClick={() => remove(tag._id)}
+                    className="text-red-600 hover:text-red-700 p-1"
+                    title="Delete"
+                  >
                     🗑️
                   </button>
                 </div>
@@ -152,26 +184,73 @@ export default function AdminTagsPage() {
             <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-bold text-slate-900">{editing ? "Edit Tag" : "Add Tag"}</h2>
-                  <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+                  <h2 className="text-xl font-bold text-slate-900">
+                    {editing ? "Edit Tag" : "Add Tag"}
+                  </h2>
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="text-slate-400 hover:text-slate-600"
+                  >
+                    ✕
+                  </button>
                 </div>
+                {/* Language Switcher */}
+                <div className="flex mb-4 border-b border-gray-200">
+                  <button
+                    type="button"
+                    className={`py-2 px-4 font-medium ${
+                      currentLang === "en"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setCurrentLang("en")}
+                  >
+                    English
+                  </button>
+                  <button
+                    type="button"
+                    className={`py-2 px-4 font-medium ${
+                      currentLang === "fr"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setCurrentLang("fr")}
+                  >
+                    Français
+                  </button>
+                </div>
+
                 <form onSubmit={onSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Name *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Name * ({currentLang.toUpperCase()})
+                    </label>
                     <input
                       type="text"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      value={form.name[currentLang]}
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          name: {
+                            ...form.name,
+                            [currentLang]: e.target.value,
+                          },
+                        })
+                      }
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Color</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Color
+                    </label>
                     <input
                       type="color"
                       value={form.color || "#3b82f6"}
-                      onChange={(e) => setForm({ ...form, color: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, color: e.target.value })
+                      }
                       className="w-16 h-10 p-1 border border-slate-300 rounded"
                     />
                   </div>
@@ -180,14 +259,25 @@ export default function AdminTagsPage() {
                       id="isActive"
                       type="checkbox"
                       checked={form.isActive !== false}
-                      onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
+                      onChange={(e) =>
+                        setForm({ ...form, isActive: e.target.checked })
+                      }
                       className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                     />
-                    <label htmlFor="isActive" className="text-sm text-slate-700">Active</label>
+                    <label
+                      htmlFor="isActive"
+                      className="text-sm text-slate-700"
+                    >
+                      Active
+                    </label>
                   </div>
 
                   <div className="flex justify-end gap-3 pt-2">
-                    <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 text-slate-600 hover:text-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => setShowModal(false)}
+                      className="px-4 py-2 text-slate-600 hover:text-slate-800"
+                    >
                       Cancel
                     </button>
                     <button

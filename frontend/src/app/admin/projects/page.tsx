@@ -4,35 +4,37 @@ import React, { useState, useEffect } from "react";
 import AdminLayout from "../../../components/admin/AdminLayout";
 
 // Force dynamic rendering to prevent prerendering issues
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export function generateViewport() {
   return {
-    width: 'device-width',
+    width: "device-width",
     initialScale: 1,
-  }
+  };
 }
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE || "http://localhost:3000";
 
 type Project = {
   _id?: string;
-  title: string;
-  description: string;
-  detailedDescription?: string;
+  title: { en: string; fr: string };
+  description: { en: string; fr: string };
+  longDescription?: { en: string; fr: string };
+  detailedDescription?: { en: string; fr: string };
   categoryId?: string;
   imageUrl?: string;
   images?: string[];
-  technologies?: string[];
-  tags?: string[];
+  technologyIds?: string[];
+  tagIds?: string[];
   status?: string;
   startDate?: string;
   endDate?: string;
-  githubUrl?: string;
+  liveUrl?: string;
   projectUrl?: string;
-  features?: string[];
-  challenges?: string[];
-  solutions?: string[];
+  githubUrl?: string;
+  features?: { en: string; fr: string }[];
+  challenges?: { en: string; fr: string }[];
+  solutions?: { en: string; fr: string }[];
   order?: number;
   isFeatured?: boolean;
   isActive?: boolean;
@@ -43,10 +45,10 @@ type Project = {
   };
   team?: {
     size?: number;
-    role?: string;
+    role?: { en: string; fr: string };
   };
   results?: {
-    metric: string;
+    metric: { en: string; fr: string };
     value: string;
   }[];
   projectType?: string;
@@ -70,12 +72,12 @@ export default function AdminProjectsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [formData, setFormData] = useState<Project>({
-    title: "",
-    description: "",
-    detailedDescription: "",
+    title: { en: "", fr: "" },
+    description: { en: "", fr: "" },
+    detailedDescription: { en: "", fr: "" },
     categoryId: "",
-    technologies: [],
-    tags: [],
+    technologyIds: [],
+    tagIds: [],
     status: "planning",
     startDate: "",
     endDate: "",
@@ -95,13 +97,14 @@ export default function AdminProjectsPage() {
     },
     team: {
       size: 1,
-      role: "",
+      role: { en: "", fr: "" },
     },
     results: [],
     projectType: "",
   });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentLang, setCurrentLang] = useState<"en" | "fr">("en");
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("adminToken") : null;
@@ -116,10 +119,12 @@ export default function AdminProjectsPage() {
     try {
       const res = await fetch(`${API_BASE}/tags`);
       const data = await res.json();
-      const names: string[] = (data || []).map((t: any) => (typeof t === 'string' ? t : t.name)).filter(Boolean);
+      const names: string[] = (data || [])
+        .map((t: any) => (typeof t === "string" ? t : t.name))
+        .filter(Boolean);
       setAllTags(names);
     } catch (error) {
-      console.error('Error fetching tags:', error);
+      console.error("Error fetching tags:", error);
     }
   };
 
@@ -128,10 +133,12 @@ export default function AdminProjectsPage() {
       const res = await fetch(`${API_BASE}/technologies`);
       const data = await res.json();
       // Expecting array of objects with name field or plain strings
-      const names: string[] = (data || []).map((t: any) => (typeof t === 'string' ? t : t.name)).filter(Boolean);
+      const names: string[] = (data || [])
+        .map((t: any) => (typeof t === "string" ? t : t.name))
+        .filter(Boolean);
       setAllTechnologies(names);
     } catch (error) {
-      console.error('Error fetching technologies:', error);
+      console.error("Error fetching technologies:", error);
     }
   };
 
@@ -141,7 +148,7 @@ export default function AdminProjectsPage() {
       const data = await res.json();
       setCategories(data.filter((cat: Category) => cat.isActive));
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     }
   };
 
@@ -157,7 +164,7 @@ export default function AdminProjectsPage() {
     setError(null);
     setLoading(true);
     try {
-      const url = editingProject 
+      const url = editingProject
         ? `${API_BASE}/projects/${editingProject._id}`
         : `${API_BASE}/projects`;
       const method = editingProject ? "PATCH" : "POST";
@@ -166,7 +173,7 @@ export default function AdminProjectsPage() {
         try {
           if (!value) return false;
           const url = new URL(value);
-          return url.protocol === 'http:' || url.protocol === 'https:';
+          return url.protocol === "http:" || url.protocol === "https:";
         } catch {
           return false;
         }
@@ -178,14 +185,18 @@ export default function AdminProjectsPage() {
       let payload: any = {
         title: formData.title,
         description: formData.description,
+        longDescription: formData.longDescription || undefined,
         detailedDescription: formData.detailedDescription || undefined,
         categoryId: formData.categoryId || undefined,
         imageUrl: normalizeUrl(formData.imageUrl),
-        images: (formData.images || []).map((x) => normalizeUrl(x)).filter(Boolean) as string[],
-        technologies: formData.technologies || [],
-        tags: formData.tags || [],
+        images: (formData.images || [])
+          .map((x) => normalizeUrl(x))
+          .filter(Boolean) as string[],
+        technologyIds: formData.technologyIds || [],
+        tagIds: formData.tagIds || [],
         status: formData.status || undefined,
         githubUrl: normalizeUrl(formData.githubUrl) || undefined,
+        liveUrl: normalizeUrl(formData.liveUrl) || undefined,
         projectUrl: normalizeUrl(formData.projectUrl) || undefined,
         features: formData.features || [],
         challenges: formData.challenges || [],
@@ -200,7 +211,7 @@ export default function AdminProjectsPage() {
       };
       if (!payload.imageUrl) delete payload.imageUrl;
       // Debug: Inspect final payload (remove for production if desired)
-      console.debug('[AdminProjects] submitting payload', payload);
+      console.debug("[AdminProjects] submitting payload", payload);
 
       const res = await fetch(url, {
         method,
@@ -211,8 +222,10 @@ export default function AdminProjectsPage() {
         body: JSON.stringify(payload),
       });
       if (!res.ok)
-        throw new Error(`Failed to ${editingProject ? 'update' : 'add'} project`);
-      
+        throw new Error(
+          `Failed to ${editingProject ? "update" : "add"} project`
+        );
+
       resetForm();
       setShowModal(false);
       await fetchProjects();
@@ -225,12 +238,12 @@ export default function AdminProjectsPage() {
 
   const resetForm = () => {
     setFormData({
-      title: "",
-      description: "",
-      detailedDescription: "",
+      title: { en: "", fr: "" },
+      description: { en: "", fr: "" },
+      detailedDescription: { en: "", fr: "" },
       categoryId: "",
-      technologies: [],
-      tags: [],
+      technologyIds: [],
+      tagIds: [],
       status: "planning",
       startDate: "",
       endDate: "",
@@ -242,7 +255,7 @@ export default function AdminProjectsPage() {
       images: [],
       order: projects.length + 1,
       isFeatured: false,
-      isActive: true
+      isActive: true,
     });
     setEditingProject(null);
   };
@@ -259,12 +272,12 @@ export default function AdminProjectsPage() {
 
   // Images handling
   const buildAbsoluteUrl = (raw?: string | null) => {
-    const u = (raw || '').trim();
-    if (!u) return '';
-    if (u.startsWith('http://') || u.startsWith('https://')) return u;
-    if (u.startsWith('/')) return `${API_BASE}${u}`;
+    const u = (raw || "").trim();
+    if (!u) return "";
+    if (u.startsWith("http://") || u.startsWith("https://")) return u;
+    if (u.startsWith("/")) return `${API_BASE}${u}`;
     // handle common backend return shapes
-    if (u.includes('uploads/')) return `${API_BASE}/${u}`; // served statically
+    if (u.includes("uploads/")) return `${API_BASE}/${u}`; // served statically
     // assume it's a filename under /upload/:filename
     return `${API_BASE}/upload/${u}`;
   };
@@ -274,45 +287,59 @@ export default function AdminProjectsPage() {
     const newUrls: string[] = [];
     for (const file of Array.from(files)) {
       const body = new FormData();
-      body.append('file', file);
+      body.append("file", file);
       try {
-        const res = await fetch(`${API_BASE}/upload/image`, { method: 'POST', body, headers: { Authorization: `Bearer ${token || ''}` } });
-        if (!res.ok) throw new Error('Upload failed');
+        const res = await fetch(`${API_BASE}/upload/image`, {
+          method: "POST",
+          body,
+          headers: { Authorization: `Bearer ${token || ""}` },
+        });
+        if (!res.ok) throw new Error("Upload failed");
         const data = await res.json();
-        let finalUrl = '';
+        let finalUrl = "";
         if (data?.url) finalUrl = buildAbsoluteUrl(data.url);
         else if (data?.filename) finalUrl = buildAbsoluteUrl(data.filename);
         else if (data?.path) finalUrl = buildAbsoluteUrl(data.path);
         if (finalUrl) newUrls.push(finalUrl);
       } catch (err) {
-        console.error('Image upload error:', err);
+        console.error("Image upload error:", err);
       }
     }
     const merged = [...(formData.images || []), ...newUrls.filter(Boolean)];
-    setFormData({ ...formData, images: merged, imageUrl: formData.imageUrl || merged[0] });
+    setFormData({
+      ...formData,
+      images: merged,
+      imageUrl: formData.imageUrl || merged[0],
+    });
   };
 
   const removeImageAt = (idx: number) => {
     const next = (formData.images || []).filter((_, i) => i !== idx);
-    const nextMain = formData.imageUrl && formData.imageUrl === formData.images?.[idx]
-      ? (next[0] || '')
-      : formData.imageUrl;
+    const nextMain =
+      formData.imageUrl && formData.imageUrl === formData.images?.[idx]
+        ? next[0] || ""
+        : formData.imageUrl;
     setFormData({ ...formData, images: next, imageUrl: nextMain });
   };
 
-  const setMainImage = (url: string) => setFormData({ ...formData, imageUrl: url });
+  const setMainImage = (url: string) =>
+    setFormData({ ...formData, imageUrl: url });
 
   // Tags handling
-  const [tagInput, setTagInput] = useState('');
+  const [tagInput, setTagInput] = useState("");
   const addTag = () => {
     const value = tagInput.trim();
     if (!value) return;
-    const exists = (formData.tags || []).includes(value);
-    if (!exists) setFormData({ ...formData, tags: [ ...(formData.tags || []), value ] });
-    setTagInput('');
+    const exists = (formData.tagIds || []).includes(value);
+    if (!exists)
+      setFormData({ ...formData, tagIds: [...(formData.tagIds || []), value] });
+    setTagInput("");
   };
   const removeTag = (value: string) => {
-    setFormData({ ...formData, tags: (formData.tags || []).filter(t => t !== value) });
+    setFormData({
+      ...formData,
+      tagIds: (formData.tagIds || []).filter((t) => t !== value),
+    });
   };
 
   const deleteProject = async (id?: string) => {
@@ -337,8 +364,12 @@ export default function AdminProjectsPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900">Projects Management</h1>
-            <p className="text-slate-600 mt-1">Manage your portfolio projects</p>
+            <h1 className="text-2xl font-bold text-slate-900">
+              Projects Management
+            </h1>
+            <p className="text-slate-600 mt-1">
+              Manage your portfolio projects
+            </p>
           </div>
           <button
             onClick={() => openModal()}
@@ -358,14 +389,24 @@ export default function AdminProjectsPage() {
         {/* Projects Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <div key={project._id} className="modern-card p-6 hover:shadow-lg transition-shadow">
+            <div
+              key={project._id}
+              className="modern-card p-6 hover:shadow-lg transition-shadow"
+            >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-2">{project.title}</h3>
-                  <p className="text-slate-600 text-sm mb-3 line-clamp-2">{project.description}</p>
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    {project.title.en || project.title.fr || "Untitled"}
+                  </h3>
+                  <p className="text-slate-600 text-sm mb-3 line-clamp-2">
+                    {project.description.en ||
+                      project.description.fr ||
+                      "No description"}
+                  </p>
                   {project.categoryId && (
                     <span className="inline-block bg-indigo-100 text-indigo-700 text-xs px-2 py-1 rounded-full">
-                      {categories.find(cat => cat._id === project.categoryId)?.name || 'Unknown Category'}
+                      {categories.find((cat) => cat._id === project.categoryId)
+                        ?.name || "Unknown Category"}
                     </span>
                   )}
                 </div>
@@ -386,15 +427,19 @@ export default function AdminProjectsPage() {
                   </button>
                 </div>
               </div>
-              
+
               {project.status && (
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-slate-500">Status:</span>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    project.status === 'completed' ? 'bg-green-100 text-green-700' :
-                    project.status === 'in-progress' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs ${
+                      project.status === "completed"
+                        ? "bg-green-100 text-green-700"
+                        : project.status === "in-progress"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}
+                  >
                     {project.status}
                   </span>
                 </div>
@@ -410,7 +455,7 @@ export default function AdminProjectsPage() {
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold text-slate-900">
-                    {editingProject ? 'Edit Project' : 'Add New Project'}
+                    {editingProject ? "Edit Project" : "Add New Project"}
                   </h2>
                   <button
                     onClick={() => setShowModal(false)}
@@ -420,16 +465,50 @@ export default function AdminProjectsPage() {
                   </button>
                 </div>
 
+                {/* Language Switcher */}
+                <div className="flex mb-4 border-b border-gray-200">
+                  <button
+                    type="button"
+                    className={`py-2 px-4 font-medium ${
+                      currentLang === "en"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setCurrentLang("en")}
+                  >
+                    English
+                  </button>
+                  <button
+                    type="button"
+                    className={`py-2 px-4 font-medium ${
+                      currentLang === "fr"
+                        ? "text-blue-600 border-b-2 border-blue-600"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                    onClick={() => setCurrentLang("fr")}
+                  >
+                    Français
+                  </button>
+                </div>
+
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Title *
+                        Title * ({currentLang.toUpperCase()})
                       </label>
                       <input
                         type="text"
-                        value={formData.title}
-                        onChange={(e) => setFormData({...formData, title: e.target.value})}
+                        value={formData.title[currentLang]}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            title: {
+                              ...formData.title,
+                              [currentLang]: e.target.value,
+                            },
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         required
                       />
@@ -439,13 +518,20 @@ export default function AdminProjectsPage() {
                         Category
                       </label>
                       <select
-                        value={formData.categoryId || ''}
-                        onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
+                        value={formData.categoryId || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            categoryId: e.target.value,
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       >
                         <option value="">Select category</option>
-                        {categories.map(cat => (
-                          <option key={cat._id} value={cat._id}>{cat.name}</option>
+                        {categories.map((cat) => (
+                          <option key={cat._id} value={cat._id}>
+                            {cat.name}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -458,13 +544,16 @@ export default function AdminProjectsPage() {
                     </label>
                     <input
                       type="text"
-                      value={formData.imageUrl || ''}
-                      onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                      value={formData.imageUrl || ""}
+                      onChange={(e) =>
+                        setFormData({ ...formData, imageUrl: e.target.value })
+                      }
                       placeholder="https://your-cdn.com/cover.png or /uploads/cover.png or filename.png"
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <p className="text-xs text-slate-500 mt-1">
-                      You can paste an external URL, a server path (starting with /uploads/...), or select a main image below.
+                      You can paste an external URL, a server path (starting
+                      with /uploads/...), or select a main image below.
                     </p>
                     {formData.imageUrl && (
                       <div className="mt-2 flex items-center gap-3">
@@ -473,12 +562,18 @@ export default function AdminProjectsPage() {
                           src={buildAbsoluteUrl(formData.imageUrl)}
                           alt="cover-preview"
                           className="w-20 h-20 object-cover rounded border border-slate-200"
-                          onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                          onError={(e) => {
+                            (
+                              e.currentTarget as HTMLImageElement
+                            ).style.display = "none";
+                          }}
                         />
                         <button
                           type="button"
                           className="px-3 py-1 text-sm bg-slate-100 rounded hover:bg-slate-200"
-                          onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                          onClick={() =>
+                            setFormData({ ...formData, imageUrl: "" })
+                          }
                         >
                           Clear
                         </button>
@@ -488,7 +583,9 @@ export default function AdminProjectsPage() {
 
                   {/* Project Images */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Project Images</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Project Images
+                    </label>
                     <input
                       type="file"
                       multiple
@@ -496,17 +593,40 @@ export default function AdminProjectsPage() {
                       onChange={(e) => handleImagesSelected(e.target.files)}
                       className="block w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                     />
-                    {(formData.images && formData.images.length > 0) && (
+                    {formData.images && formData.images.length > 0 && (
                       <div className="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3">
                         {formData.images!.map((url, idx) => (
-                          <div key={idx} className={`relative rounded-lg overflow-hidden border ${formData.imageUrl === url ? 'border-indigo-500' : 'border-slate-200'}`}>
+                          <div
+                            key={idx}
+                            className={`relative rounded-lg overflow-hidden border ${
+                              formData.imageUrl === url
+                                ? "border-indigo-500"
+                                : "border-slate-200"
+                            }`}
+                          >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={url} alt={`image-${idx}`} className="w-full h-28 object-cover" />
+                            <img
+                              src={url}
+                              alt={`image-${idx}`}
+                              className="w-full h-28 object-cover"
+                            />
                             <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/50 to-transparent flex justify-between gap-2">
-                              <button type="button" onClick={() => setMainImage(url)} className="text-xs px-2 py-1 rounded bg-white/90 hover:bg-white">
-                                {formData.imageUrl === url ? 'Main' : 'Set Main'}
+                              <button
+                                type="button"
+                                onClick={() => setMainImage(url)}
+                                className="text-xs px-2 py-1 rounded bg-white/90 hover:bg-white"
+                              >
+                                {formData.imageUrl === url
+                                  ? "Main"
+                                  : "Set Main"}
                               </button>
-                              <button type="button" onClick={() => removeImageAt(idx)} className="text-xs px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700">Remove</button>
+                              <button
+                                type="button"
+                                onClick={() => removeImageAt(idx)}
+                                className="text-xs px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700"
+                              >
+                                Remove
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -516,22 +636,34 @@ export default function AdminProjectsPage() {
 
                   {/* Tags multi-select (preset only) */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Tags</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Tags
+                    </label>
                     {/* Preset tags as selectable chips */}
                     {allTags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-2 border border-slate-300 rounded-lg p-3">
                         {allTags.map((tag) => {
-                          const selected = (formData.tags || []).includes(tag);
+                          const selected = (formData.tagIds || []).includes(
+                            tag
+                          );
                           return (
                             <button
                               type="button"
                               key={tag}
                               onClick={() => {
-                                const set = new Set(formData.tags || []);
-                                if (set.has(tag)) set.delete(tag); else set.add(tag);
-                                setFormData({ ...formData, tags: Array.from(set) });
+                                const set = new Set(formData.tagIds || []);
+                                if (set.has(tag)) set.delete(tag);
+                                else set.add(tag);
+                                setFormData({
+                                  ...formData,
+                                  tagIds: Array.from(set),
+                                });
                               }}
-                              className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                              className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                                selected
+                                  ? "bg-indigo-600 text-white border-indigo-600"
+                                  : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                              }`}
                             >
                               {tag}
                             </button>
@@ -544,20 +676,32 @@ export default function AdminProjectsPage() {
 
                   {/* Technologies multi-select */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Technologies</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Technologies
+                    </label>
                     <div className="flex flex-wrap gap-2 border border-slate-300 rounded-lg p-3">
                       {allTechnologies.map((tech) => {
-                        const selected = (formData.technologies || []).includes(tech);
+                        const selected = (
+                          formData.technologyIds || []
+                        ).includes(tech);
                         return (
                           <button
                             type="button"
                             key={tech}
                             onClick={() => {
-                              const set = new Set(formData.technologies || []);
-                              if (set.has(tech)) set.delete(tech); else set.add(tech);
-                              setFormData({ ...formData, technologies: Array.from(set) });
+                              const set = new Set(formData.technologyIds || []);
+                              if (set.has(tech)) set.delete(tech);
+                              else set.add(tech);
+                              setFormData({
+                                ...formData,
+                                technologyIds: Array.from(set),
+                              });
                             }}
-                            className={`px-3 py-1 rounded-full text-sm border transition-colors ${selected ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-50'}`}
+                            className={`px-3 py-1 rounded-full text-sm border transition-colors ${
+                              selected
+                                ? "bg-indigo-600 text-white border-indigo-600"
+                                : "bg-white text-slate-700 border-slate-300 hover:bg-slate-50"
+                            }`}
                           >
                             {tech}
                           </button>
@@ -574,8 +718,13 @@ export default function AdminProjectsPage() {
                       </label>
                       <input
                         type="date"
-                        value={formData.startDate || ''}
-                        onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+                        value={formData.startDate || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            startDate: e.target.value,
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
                     </div>
@@ -585,8 +734,10 @@ export default function AdminProjectsPage() {
                       </label>
                       <input
                         type="date"
-                        value={formData.endDate || ''}
-                        onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                        value={formData.endDate || ""}
+                        onChange={(e) =>
+                          setFormData({ ...formData, endDate: e.target.value })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
                     </div>
@@ -594,32 +745,52 @@ export default function AdminProjectsPage() {
 
                   {/* Timeline */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Timeline</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Timeline
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <input
                         type="date"
                         placeholder="Start"
-                        value={formData.timeline?.start || ''}
+                        value={formData.timeline?.start || ""}
                         onChange={(e) =>
-                          setFormData({ ...formData, timeline: { ...formData.timeline, start: e.target.value } })
+                          setFormData({
+                            ...formData,
+                            timeline: {
+                              ...formData.timeline,
+                              start: e.target.value,
+                            },
+                          })
                         }
                         className="border border-slate-300 rounded-lg px-3 py-2"
                       />
                       <input
                         type="date"
                         placeholder="End"
-                        value={formData.timeline?.end || ''}
+                        value={formData.timeline?.end || ""}
                         onChange={(e) =>
-                          setFormData({ ...formData, timeline: { ...formData.timeline, end: e.target.value } })
+                          setFormData({
+                            ...formData,
+                            timeline: {
+                              ...formData.timeline,
+                              end: e.target.value,
+                            },
+                          })
                         }
                         className="border border-slate-300 rounded-lg px-3 py-2"
                       />
                       <input
                         type="text"
                         placeholder="Duration (e.g. 3 months)"
-                        value={formData.timeline?.duration || ''}
+                        value={formData.timeline?.duration || ""}
                         onChange={(e) =>
-                          setFormData({ ...formData, timeline: { ...formData.timeline, duration: e.target.value } })
+                          setFormData({
+                            ...formData,
+                            timeline: {
+                              ...formData.timeline,
+                              duration: e.target.value,
+                            },
+                          })
                         }
                         className="border border-slate-300 rounded-lg px-3 py-2"
                       />
@@ -628,23 +799,40 @@ export default function AdminProjectsPage() {
 
                   {/* Team */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Team</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Team
+                    </label>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <input
                         type="number"
                         placeholder="Team size"
                         value={formData.team?.size || 1}
                         onChange={(e) =>
-                          setFormData({ ...formData, team: { ...formData.team, size: parseInt(e.target.value) || 1 } })
+                          setFormData({
+                            ...formData,
+                            team: {
+                              ...formData.team,
+                              size: parseInt(e.target.value) || 1,
+                            },
+                          })
                         }
                         className="border border-slate-300 rounded-lg px-3 py-2"
                       />
                       <input
                         type="text"
                         placeholder="Your role"
-                        value={formData.team?.role || ''}
+                        value={formData.team?.role?.[currentLang] || ""}
                         onChange={(e) =>
-                          setFormData({ ...formData, team: { ...formData.team, role: e.target.value } })
+                          setFormData({
+                            ...formData,
+                            team: {
+                              ...formData.team,
+                              role: {
+                                ...(formData.team?.role || { en: "", fr: "" }),
+                                [currentLang]: e.target.value,
+                              },
+                            },
+                          })
                         }
                         className="border border-slate-300 rounded-lg px-3 py-2"
                       />
@@ -653,16 +841,25 @@ export default function AdminProjectsPage() {
 
                   {/* Results */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Results (metrics)</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Results (metrics)
+                    </label>
                     {(formData.results || []).map((res, idx) => (
                       <div key={idx} className="flex gap-2 mb-2">
                         <input
                           type="text"
                           placeholder="Metric (e.g. Users)"
-                          value={res.metric}
+                          value={
+                            typeof res.metric === "string"
+                              ? res.metric
+                              : res.metric[currentLang]
+                          }
                           onChange={(e) => {
                             const next = [...(formData.results || [])];
-                            next[idx].metric = e.target.value;
+                            next[idx].metric = {
+                              ...next[idx].metric,
+                              [currentLang]: e.target.value,
+                            };
                             setFormData({ ...formData, results: next });
                           }}
                           className="flex-1 border border-slate-300 rounded-lg px-3 py-2"
@@ -680,7 +877,14 @@ export default function AdminProjectsPage() {
                         />
                         <button
                           type="button"
-                          onClick={() => setFormData({ ...formData, results: (formData.results || []).filter((_, i) => i !== idx) })}
+                          onClick={() =>
+                            setFormData({
+                              ...formData,
+                              results: (formData.results || []).filter(
+                                (_, i) => i !== idx
+                              ),
+                            })
+                          }
                           className="px-2 text-red-600 hover:text-red-800"
                         >
                           ✕
@@ -689,7 +893,15 @@ export default function AdminProjectsPage() {
                     ))}
                     <button
                       type="button"
-                      onClick={() => setFormData({ ...formData, results: [...(formData.results || []), { metric: '', value: '' }] })}
+                      onClick={() =>
+                        setFormData({
+                          ...formData,
+                          results: [
+                            ...(formData.results || []),
+                            { metric: { en: "", fr: "" }, value: "" },
+                          ],
+                        })
+                      }
                       className="px-3 py-1 text-sm bg-slate-100 rounded hover:bg-slate-200"
                     >
                       + Add Result
@@ -698,24 +910,38 @@ export default function AdminProjectsPage() {
 
                   {/* Project Type */}
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Project Type</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Project Type
+                    </label>
                     <input
                       type="text"
-                      value={formData.projectType || ''}
-                      onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
+                      value={formData.projectType || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          projectType: e.target.value,
+                        })
+                      }
                       className="w-full border border-slate-300 rounded-lg px-3 py-2"
                       placeholder="e.g. Mobile App, Web App, Backend Service"
                     />
                   </div>
 
-
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Short Description *
+                      Short Description * ({currentLang.toUpperCase()})
                     </label>
                     <textarea
-                      value={formData.description}
-                      onChange={(e) => setFormData({...formData, description: e.target.value})}
+                      value={formData.description[currentLang]}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: {
+                            ...formData.description,
+                            [currentLang]: e.target.value,
+                          },
+                        })
+                      }
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       rows={2}
                       placeholder="Brief description for project cards"
@@ -725,11 +951,22 @@ export default function AdminProjectsPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">
-                      Detailed Description
+                      Detailed Description ({currentLang.toUpperCase()})
                     </label>
                     <textarea
-                      value={formData.detailedDescription || ''}
-                      onChange={(e) => setFormData({...formData, detailedDescription: e.target.value})}
+                      value={formData.detailedDescription?.[currentLang] || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          detailedDescription: {
+                            ...(formData.detailedDescription || {
+                              en: "",
+                              fr: "",
+                            }),
+                            [currentLang]: e.target.value,
+                          },
+                        })
+                      }
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       rows={4}
                       placeholder="Detailed description for project details page"
@@ -742,8 +979,10 @@ export default function AdminProjectsPage() {
                         Status
                       </label>
                       <select
-                        value={formData.status || 'planning'}
-                        onChange={(e) => setFormData({...formData, status: e.target.value})}
+                        value={formData.status || "planning"}
+                        onChange={(e) =>
+                          setFormData({ ...formData, status: e.target.value })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       >
                         <option value="planning">Planning</option>
@@ -757,8 +996,13 @@ export default function AdminProjectsPage() {
                       </label>
                       <input
                         type="url"
-                        value={formData.githubUrl || ''}
-                        onChange={(e) => setFormData({...formData, githubUrl: e.target.value})}
+                        value={formData.githubUrl || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            githubUrl: e.target.value,
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
                     </div>
@@ -771,8 +1015,13 @@ export default function AdminProjectsPage() {
                       </label>
                       <input
                         type="url"
-                        value={formData.projectUrl || ''}
-                        onChange={(e) => setFormData({...formData, projectUrl: e.target.value})}
+                        value={formData.projectUrl || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            projectUrl: e.target.value,
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       />
                     </div>
@@ -783,7 +1032,12 @@ export default function AdminProjectsPage() {
                       <input
                         type="number"
                         value={formData.order || 1}
-                        onChange={(e) => setFormData({...formData, order: parseInt(e.target.value) || 1})}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            order: parseInt(e.target.value) || 1,
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         min="1"
                       />
@@ -796,10 +1050,18 @@ export default function AdminProjectsPage() {
                         type="checkbox"
                         id="isFeatured"
                         checked={formData.isFeatured || false}
-                        onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isFeatured: e.target.checked,
+                          })
+                        }
                         className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <label htmlFor="isFeatured" className="ml-2 text-sm font-medium text-slate-700">
+                      <label
+                        htmlFor="isFeatured"
+                        className="ml-2 text-sm font-medium text-slate-700"
+                      >
                         Featured Project
                       </label>
                     </div>
@@ -808,10 +1070,18 @@ export default function AdminProjectsPage() {
                         type="checkbox"
                         id="isActive"
                         checked={formData.isActive !== false}
-                        onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            isActive: e.target.checked,
+                          })
+                        }
                         className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                       />
-                      <label htmlFor="isActive" className="ml-2 text-sm font-medium text-slate-700">
+                      <label
+                        htmlFor="isActive"
+                        className="ml-2 text-sm font-medium text-slate-700"
+                      >
                         Active/Published
                       </label>
                     </div>
@@ -822,8 +1092,15 @@ export default function AdminProjectsPage() {
                       Features (one per line)
                     </label>
                     <textarea
-                      value={formData.features?.join('\n') || ''}
-                      onChange={(e) => setFormData({...formData, features: e.target.value.split('\n').filter(f => f.trim())})}
+                      value={formData.features?.join("\n") || ""}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          features: e.target.value
+                            .split("\n")
+                            .filter((f) => f.trim()) as any,
+                        })
+                      }
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                       rows={3}
                       placeholder="Feature 1\nFeature 2\nFeature 3"
@@ -836,8 +1113,15 @@ export default function AdminProjectsPage() {
                         Challenges (one per line)
                       </label>
                       <textarea
-                        value={formData.challenges?.join('\n') || ''}
-                        onChange={(e) => setFormData({...formData, challenges: e.target.value.split('\n').filter(c => c.trim())})}
+                        value={formData.challenges?.join("\n") || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            challenges: e.target.value
+                              .split("\n")
+                              .filter((c) => c.trim()) as any,
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         rows={3}
                         placeholder="Challenge 1\nChallenge 2"
@@ -848,8 +1132,15 @@ export default function AdminProjectsPage() {
                         Solutions (one per line)
                       </label>
                       <textarea
-                        value={formData.solutions?.join('\n') || ''}
-                        onChange={(e) => setFormData({...formData, solutions: e.target.value.split('\n').filter(s => s.trim())})}
+                        value={formData.solutions?.join("\n") || ""}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            solutions: e.target.value
+                              .split("\n")
+                              .filter((s) => s.trim()) as any,
+                          })
+                        }
                         className="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                         rows={3}
                         placeholder="Solution 1\nSolution 2"
@@ -870,7 +1161,11 @@ export default function AdminProjectsPage() {
                       disabled={loading}
                       className="bg-gradient-to-r from-indigo-500 to-cyan-500 text-white px-6 py-2 rounded-lg hover:shadow-lg transition-all duration-200 disabled:opacity-50"
                     >
-                      {loading ? 'Saving...' : editingProject ? 'Update Project' : 'Add Project'}
+                      {loading
+                        ? "Saving..."
+                        : editingProject
+                        ? "Update Project"
+                        : "Add Project"}
                     </button>
                   </div>
                 </form>

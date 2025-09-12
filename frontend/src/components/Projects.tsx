@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import api from "@/utils/api";
 import { useTranslations } from "../hooks/useTranslations";
+import { getLocalizedText, getLocalizedArray } from "@/utils/localization";
+import { Project, Technology, Tag } from "@/types";
 import { Modal } from "./ui/Modal";
 import Card from "./ui/Card";
 import Badge from "./ui/Badge";
@@ -18,234 +20,55 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-interface Project {
-  _id: string;
-  title: string;
-  description: string;
-  category?: string;
-  imageUrl?: string;
-  technologies?: string[];
-  status?: string;
-  tags?: string[];
-  liveUrl?: string;
-  githubUrl?: string;
-  featured?: boolean;
-  // Extended fields for case study
-  longDescription?: string;
-  challenges?: string[];
-  solutions?: string[];
-  features?: string[];
-  timeline?: {
-    start: string;
-    end?: string;
-    duration?: string;
-  };
-  team?: {
-    size: number;
-    role: string;
-  };
-  results?: {
-    metric: string;
-    value: string;
-  }[];
-  gallery?: string[];
-  clientTestimonial?: {
-    text: string;
-    author: string;
-    position: string;
-  };
-}
+// Project interface is now imported from types
 
 const Projects: React.FC = () => {
   const [projects, setProjects] = useState<Project[]>([]);
+  const [technologies, setTechnologies] = useState<Technology[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<string | "all">("all");
   const [tech, setTech] = useState<string | "all">("all");
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState<"en" | "fr">("en");
   const t = useTranslations();
 
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       try {
-        const response = await api.get("/projects");
-        setProjects(response.data);
+        const [projectsResponse, technologiesResponse, tagsResponse] =
+          await Promise.all([
+            api.get("/projects"),
+            api.get("/technologies"),
+            api.get("/tags"),
+          ]);
+
+        setProjects(projectsResponse.data);
+        setTechnologies(technologiesResponse.data);
+        setTags(tagsResponse.data);
       } catch (error) {
-        console.error("Error fetching projects:", error);
-        // Fallback data with extended case study information
+        console.error("Error fetching data:", error);
+        // Simple fallback data
         setProjects([
           {
             _id: "1",
-            title: "E-Commerce Platform",
-            description:
-              "Full-stack e-commerce solution with payment integration",
-            longDescription:
-              "A comprehensive e-commerce platform built from scratch with modern technologies. Features include user authentication, product catalog, shopping cart, secure payment processing, order management, and admin dashboard. The platform handles thousands of products and processes hundreds of orders daily.",
-            category: "Web Development",
-            technologies: [
-              "React",
-              "Node.js",
-              "MongoDB",
-              "Stripe",
-              "Redis",
-              "AWS",
-            ],
+            title: { en: "E-Commerce Platform", fr: "Plateforme E-Commerce" },
+            description: {
+              en: "Full-stack e-commerce solution with payment integration",
+              fr: "Solution e-commerce full-stack avec intégration de paiement",
+            },
+            technologyIds: [],
+            tagIds: [],
             liveUrl: "#",
             githubUrl: "#",
             status: "completed",
-            featured: true,
-            challenges: [
-              "Implementing secure payment processing with multiple gateways",
-              "Optimizing database queries for large product catalogs",
-              "Building real-time inventory management",
-              "Ensuring mobile responsiveness across all devices",
-            ],
-            solutions: [
-              "Integrated Stripe and PayPal with robust error handling",
-              "Implemented database indexing and query optimization",
-              "Built WebSocket-based real-time updates",
-              "Used responsive design principles and extensive testing",
-            ],
-            features: [
-              "Multi-vendor marketplace support",
-              "Advanced search and filtering",
-              "Wishlist and comparison tools",
-              "Order tracking and notifications",
-              "Admin analytics dashboard",
-              "Mobile-first responsive design",
-            ],
-            timeline: {
-              start: "2023-01",
-              end: "2023-06",
-              duration: "6 months",
-            },
-            team: {
-              size: 3,
-              role: "Full-Stack Developer & Team Lead",
-            },
-            results: [
-              { metric: "Performance Score", value: "95/100" },
-              { metric: "Load Time", value: "< 2s" },
-              { metric: "Conversion Rate", value: "+35%" },
-              { metric: "User Satisfaction", value: "4.8/5" },
-            ],
-            clientTestimonial: {
-              text: "The platform exceeded our expectations. The team delivered a robust, scalable solution that has significantly improved our online sales.",
-              author: "Sarah Johnson",
-              position: "CEO, TechStore",
-            },
-          },
-          {
-            _id: "2",
-            title: "Task Management App",
-            description:
-              "Collaborative project management tool with real-time updates",
-            longDescription:
-              "A modern project management application designed for remote teams. Features real-time collaboration, task assignment, progress tracking, file sharing, and team communication. Built with scalability in mind to support teams of all sizes.",
-            category: "Web Development",
-            technologies: [
-              "Next.js",
-              "TypeScript",
-              "PostgreSQL",
-              "Socket.io",
-              "Prisma",
-              "Tailwind",
-            ],
-            liveUrl: "#",
-            githubUrl: "#",
-            status: "completed",
-            featured: true,
-            challenges: [
-              "Real-time synchronization across multiple users",
-              "Complex permission system for team roles",
-              "Optimizing performance with large datasets",
-              "Cross-browser compatibility for real-time features",
-            ],
-            solutions: [
-              "Implemented WebSocket connections with Socket.io",
-              "Built role-based access control system",
-              "Used virtual scrolling and pagination",
-              "Extensive browser testing and polyfills",
-            ],
-            features: [
-              "Real-time collaboration",
-              "Kanban and list views",
-              "Time tracking and reporting",
-              "File attachments and comments",
-              "Team chat integration",
-              "Mobile app companion",
-            ],
-            timeline: {
-              start: "2023-03",
-              end: "2023-08",
-              duration: "5 months",
-            },
-            team: {
-              size: 4,
-              role: "Frontend Lead Developer",
-            },
-            results: [
-              { metric: "Active Users", value: "2,500+" },
-              { metric: "Task Completion", value: "+40%" },
-              { metric: "Team Productivity", value: "+25%" },
-              { metric: "User Retention", value: "85%" },
-            ],
-          },
-          {
-            _id: "3",
-            title: "Weather Dashboard",
-            description: "Beautiful weather app with location-based forecasts",
-            longDescription:
-              "An intuitive weather application providing accurate forecasts, interactive maps, and personalized weather alerts. Features include current conditions, 7-day forecasts, radar maps, and severe weather notifications.",
-            category: "Web Development",
-            technologies: [
-              "React",
-              "API Integration",
-              "Chart.js",
-              "CSS3",
-              "PWA",
-              "Geolocation",
-            ],
-            liveUrl: "#",
-            githubUrl: "#",
-            status: "completed",
-            featured: true,
-            challenges: [
-              "Integrating multiple weather APIs for accuracy",
-              "Creating smooth animations for weather transitions",
-              "Implementing offline functionality",
-              "Optimizing for various screen sizes",
-            ],
-            solutions: [
-              "Built API aggregation layer with fallback systems",
-              "Used CSS animations and Framer Motion",
-              "Implemented service worker for PWA capabilities",
-              "Responsive design with mobile-first approach",
-            ],
-            features: [
-              "Current weather conditions",
-              "7-day detailed forecasts",
-              "Interactive weather maps",
-              "Severe weather alerts",
-              "Location-based suggestions",
-              "Offline mode support",
-            ],
-            timeline: {
-              start: "2023-07",
-              end: "2023-09",
-              duration: "3 months",
-            },
-            team: {
-              size: 2,
-              role: "Solo Developer",
-            },
-            results: [
-              { metric: "Accuracy Rate", value: "94%" },
-              { metric: "App Store Rating", value: "4.7/5" },
-              { metric: "Daily Active Users", value: "15K+" },
-              { metric: "Load Speed", value: "1.2s" },
-            ],
+            isFeatured: true,
+            isActive: true,
+            order: 1,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
           },
         ]);
       } finally {
@@ -253,7 +76,7 @@ const Projects: React.FC = () => {
       }
     };
 
-    fetchProjects();
+    fetchData();
   }, []);
 
   const getStatusTranslation = (status: string) => {
@@ -271,30 +94,56 @@ const Projects: React.FC = () => {
     }
   };
 
+  const getProjectTechnologies = (project: Project) => {
+    return technologies.filter((tech) =>
+      project.technologyIds.includes(tech._id)
+    );
+  };
+
   const categories = useMemo(() => {
     const set = new Set<string>();
-    projects.forEach((p) => p.category && set.add(p.category));
+    projects.forEach((p) => p.categoryId && set.add(p.categoryId));
     return Array.from(set);
   }, [projects]);
 
-  const technologies = useMemo(() => {
+  const availableTechnologies = useMemo(() => {
     const set = new Set<string>();
-    projects.forEach((p) => p.technologies?.forEach((t) => set.add(t)));
+    projects.forEach((p) => {
+      const projectTechs = getProjectTechnologies(p);
+      projectTechs.forEach((t) =>
+        set.add(getLocalizedText(t.name, currentLanguage))
+      );
+    });
     return Array.from(set);
-  }, [projects]);
+  }, [projects, currentLanguage, technologies]);
+
+  const getProjectTags = (project: Project) => {
+    return tags.filter((tag) => project.tagIds.includes(tag._id));
+  };
 
   const filtered = useMemo(() => {
     return projects.filter((p) => {
       const matchesSearch =
         !search ||
-        p.title.toLowerCase().includes(search.toLowerCase()) ||
-        p.description.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory = category === "all" || p.category === category;
+        getLocalizedText(p.title, currentLanguage)
+          .toLowerCase()
+          .includes(search.toLowerCase()) ||
+        getLocalizedText(p.description, currentLanguage)
+          .toLowerCase()
+          .includes(search.toLowerCase());
+
+      const matchesCategory = category === "all" || p.categoryId === category;
+
+      const projectTechs = getProjectTechnologies(p);
       const matchesTech =
-        tech === "all" || (p.technologies && p.technologies.includes(tech));
+        tech === "all" ||
+        projectTechs.some(
+          (t) => getLocalizedText(t.name, currentLanguage) === tech
+        );
+
       return matchesSearch && matchesCategory && matchesTech;
     });
-  }, [projects, search, category, tech]);
+  }, [projects, search, category, tech, currentLanguage, technologies]);
 
   const openCaseStudy = (project: Project) => {
     setSelectedProject(project);
@@ -316,9 +165,34 @@ const Projects: React.FC = () => {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             {t("Projects.featuredSubtitle")}
           </p>
+
+          {/* Language Switcher */}
+          <div className="flex justify-center mt-6">
+            <div className="flex bg-gray-200 rounded-lg p-1">
+              <button
+                onClick={() => setCurrentLanguage("en")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  currentLanguage === "en"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                English
+              </button>
+              <button
+                onClick={() => setCurrentLanguage("fr")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  currentLanguage === "fr"
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Français
+              </button>
+            </div>
+          </div>
         </div>
 
-        
         {loading ? (
           <div className="flex justify-center items-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -335,7 +209,7 @@ const Projects: React.FC = () => {
                   <div className="h-48 bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
                     <img
                       src={project.imageUrl}
-                      alt={project.title}
+                      alt={getLocalizedText(project.title, currentLanguage)}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -350,10 +224,10 @@ const Projects: React.FC = () => {
 
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-xl font-semibold text-gray-900 group-hover:text-blue-600 transition-colors">
-                      {project.title}
+                      {getLocalizedText(project.title, currentLanguage)}
                     </h3>
                     <div className="flex gap-2">
-                      {project.featured && (
+                      {project.isFeatured && (
                         <Badge variant="primary" size="sm">
                           Featured
                         </Badge>
@@ -375,32 +249,35 @@ const Projects: React.FC = () => {
                     </div>
                   </div>
 
-                  {project.category && (
+                  {project.categoryId && (
                     <Badge variant="secondary" size="sm" className="mb-3">
-                      {project.category}
+                      {project.categoryId}
                     </Badge>
                   )}
 
                   <p className="text-gray-600 mb-4 leading-relaxed">
-                    {project.description}
+                    {getLocalizedText(project.description, currentLanguage)}
                   </p>
 
-                  {project.technologies && project.technologies.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies
-                        .slice(0, 4)
-                        .map((tech, techIndex) => (
-                          <Badge key={techIndex} variant="info" size="sm">
-                            {tech}
-                          </Badge>
-                        ))}
-                      {project.technologies.length > 4 && (
-                        <Badge variant="default" size="sm">
-                          +{project.technologies.length - 4} more
-                        </Badge>
-                      )}
-                    </div>
-                  )}
+                  {(() => {
+                    const projectTechnologies = getProjectTechnologies(project);
+                    return (
+                      projectTechnologies.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {projectTechnologies.slice(0, 4).map((tech) => (
+                            <Badge key={tech._id} variant="info" size="sm">
+                              {getLocalizedText(tech.name, currentLanguage)}
+                            </Badge>
+                          ))}
+                          {projectTechnologies.length > 4 && (
+                            <Badge variant="default" size="sm">
+                              +{projectTechnologies.length - 4} more
+                            </Badge>
+                          )}
+                        </div>
+                      )
+                    );
+                  })()}
 
                   <div className="flex flex-col gap-3">
                     <Button
@@ -449,7 +326,11 @@ const Projects: React.FC = () => {
           isOpen={isModalOpen}
           onClose={closeCaseStudy}
           size="xl"
-          title={selectedProject?.title}
+          title={
+            selectedProject
+              ? getLocalizedText(selectedProject.title, currentLanguage)
+              : ""
+          }
         >
           {selectedProject && (
             <div className="max-h-[80vh] overflow-y-auto">
@@ -459,16 +340,19 @@ const Projects: React.FC = () => {
                   <div className="w-full h-64 bg-gradient-to-br from-blue-400 to-purple-500 rounded-lg mb-4 overflow-hidden">
                     <img
                       src={selectedProject.imageUrl}
-                      alt={selectedProject.title}
+                      alt={getLocalizedText(
+                        selectedProject.title,
+                        currentLanguage
+                      )}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 )}
 
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {selectedProject.category && (
+                  {selectedProject.categoryId && (
                     <Badge variant="secondary">
-                      {selectedProject.category}
+                      {selectedProject.categoryId}
                     </Badge>
                   )}
                   {selectedProject.status && (
@@ -484,14 +368,17 @@ const Projects: React.FC = () => {
                       {getStatusTranslation(selectedProject.status)}
                     </Badge>
                   )}
-                  {selectedProject.featured && (
+                  {selectedProject.isFeatured && (
                     <Badge variant="primary">Featured</Badge>
                   )}
                 </div>
 
                 <p className="text-gray-700 text-lg leading-relaxed">
-                  {selectedProject.longDescription ||
-                    selectedProject.description}
+                  {getLocalizedText(
+                    selectedProject.longDescription ||
+                      selectedProject.description,
+                    currentLanguage
+                  )}
                 </p>
               </div>
 
@@ -528,7 +415,11 @@ const Projects: React.FC = () => {
                         {selectedProject.team.size} members
                       </p>
                       <p className="text-sm text-gray-500">
-                        Role: {selectedProject.team.role}
+                        Role:{" "}
+                        {getLocalizedText(
+                          selectedProject.team.role,
+                          currentLanguage
+                        )}
                       </p>
                     </Card>
                   )}
@@ -536,21 +427,26 @@ const Projects: React.FC = () => {
               )}
 
               {/* Technologies */}
-              {selectedProject.technologies &&
-                selectedProject.technologies.length > 0 && (
-                  <div className="mb-6">
-                    <h4 className="font-semibold text-gray-900 mb-3">
-                      Technologies Used
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProject.technologies.map((tech, index) => (
-                        <Badge key={index} variant="info">
-                          {tech}
-                        </Badge>
-                      ))}
+              {(() => {
+                const projectTechnologies =
+                  getProjectTechnologies(selectedProject);
+                return (
+                  projectTechnologies.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="font-semibold text-gray-900 mb-3">
+                        Technologies Used
+                      </h4>
+                      <div className="flex flex-wrap gap-2">
+                        {projectTechnologies.map((tech) => (
+                          <Badge key={tech._id} variant="info">
+                            {getLocalizedText(tech.name, currentLanguage)}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )
+                );
+              })()}
 
               {/* Features */}
               {selectedProject.features &&
@@ -566,7 +462,9 @@ const Projects: React.FC = () => {
                       {selectedProject.features.map((feature, index) => (
                         <div key={index} className="flex items-start gap-2">
                           <span className="text-green-500 mt-1">✓</span>
-                          <span className="text-gray-700">{feature}</span>
+                          <span className="text-gray-700">
+                            {getLocalizedText(feature, currentLanguage)}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -594,7 +492,7 @@ const Projects: React.FC = () => {
                               >
                                 <span className="text-red-500 mt-1">⚠</span>
                                 <span className="text-gray-700">
-                                  {challenge}
+                                  {getLocalizedText(challenge, currentLanguage)}
                                 </span>
                               </li>
                             )
@@ -616,7 +514,9 @@ const Projects: React.FC = () => {
                           {selectedProject.solutions.map((solution, index) => (
                             <li key={index} className="flex items-start gap-2">
                               <span className="text-green-500 mt-1">💡</span>
-                              <span className="text-gray-700">{solution}</span>
+                              <span className="text-gray-700">
+                                {getLocalizedText(solution, currentLanguage)}
+                              </span>
                             </li>
                           ))}
                         </ul>
@@ -636,10 +536,10 @@ const Projects: React.FC = () => {
                       {selectedProject.results.map((result, index) => (
                         <Card key={index} className="p-4 text-center">
                           <div className="text-2xl font-bold text-blue-600 mb-1">
-                            {result.value}
+                            {getLocalizedText(result.value, currentLanguage)}
                           </div>
                           <div className="text-sm text-gray-600">
-                            {result.metric}
+                            {getLocalizedText(result.metric, currentLanguage)}
                           </div>
                         </Card>
                       ))}
@@ -655,14 +555,25 @@ const Projects: React.FC = () => {
                   </h4>
                   <Card className="p-6 bg-blue-50">
                     <blockquote className="text-gray-700 italic mb-4">
-                      "{selectedProject.clientTestimonial.text}"
+                      "
+                      {getLocalizedText(
+                        selectedProject.clientTestimonial.text,
+                        currentLanguage
+                      )}
+                      "
                     </blockquote>
                     <div className="text-sm">
                       <div className="font-semibold text-gray-900">
-                        {selectedProject.clientTestimonial.author}
+                        {getLocalizedText(
+                          selectedProject.clientTestimonial.author,
+                          currentLanguage
+                        )}
                       </div>
                       <div className="text-gray-600">
-                        {selectedProject.clientTestimonial.position}
+                        {getLocalizedText(
+                          selectedProject.clientTestimonial.position,
+                          currentLanguage
+                        )}
                       </div>
                     </div>
                   </Card>

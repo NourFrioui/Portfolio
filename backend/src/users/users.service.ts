@@ -103,19 +103,54 @@ export class UsersService {
     const completedFields: string[] = [];
     const missingFields: string[] = [];
 
-    // Check regular fields
+    // Check regular fields (including localized fields)
     requiredFields.forEach((field) => {
-      if (user[field] && user[field].toString().trim() !== '') {
-        completedFields.push(field);
+      const value = user[field as keyof User];
+      if (value) {
+        // Check if it's a localized field
+        if (typeof value === 'object' && value !== null && 'en' in value) {
+          const localizedValue = value as { en?: string; fr?: string };
+          if (localizedValue.en && localizedValue.en.toString().trim() !== '') {
+            completedFields.push(field);
+          } else {
+            missingFields.push(field);
+          }
+        } else if (
+          typeof value === 'string' &&
+          value.toString().trim() !== ''
+        ) {
+          completedFields.push(field);
+        } else {
+          missingFields.push(field);
+        }
       } else {
         missingFields.push(field);
       }
     });
 
-    // Check array fields
+    // Check array fields (including localized arrays)
     arrayFields.forEach((field) => {
-      if (user[field] && Array.isArray(user[field]) && user[field].length > 0) {
-        completedFields.push(field);
+      const value = user[field as keyof User];
+      if (value && Array.isArray(value) && value.length > 0) {
+        // Check if it's a localized array
+        if (
+          value[0] &&
+          typeof value[0] === 'object' &&
+          value[0] !== null &&
+          'en' in value[0]
+        ) {
+          const localizedArray = value as Array<{ en?: string; fr?: string }>;
+          const hasValidEntries = localizedArray.some(
+            (item) => item.en && item.en.toString().trim() !== '',
+          );
+          if (hasValidEntries) {
+            completedFields.push(field);
+          } else {
+            missingFields.push(field);
+          }
+        } else {
+          completedFields.push(field);
+        }
       } else {
         missingFields.push(field);
       }
@@ -132,14 +167,14 @@ export class UsersService {
   }
 
   // Validate profile data
-  async validateProfile(
+  validateProfile(
     id: string,
     updateProfileDto: UpdateProfileDto,
-  ): Promise<{
+  ): {
     isValid: boolean;
     errors: string[];
     warnings: string[];
-  }> {
+  } {
     const errors: string[] = [];
     const warnings: string[] = [];
 
@@ -154,9 +189,10 @@ export class UsersService {
     // URL validations
     const urlFields = ['website', 'linkedIn', 'github', 'twitter', 'resumeUrl'];
     urlFields.forEach((field) => {
-      if (updateProfileDto[field]) {
+      const value = updateProfileDto[field as keyof UpdateProfileDto];
+      if (value && typeof value === 'string') {
         try {
-          new URL(updateProfileDto[field]);
+          new URL(value);
         } catch {
           errors.push(`Invalid ${field} URL format`);
         }
@@ -166,14 +202,23 @@ export class UsersService {
     // Phone validation
     if (updateProfileDto.phone) {
       const phoneRegex = /^[+]?[1-9]?[0-9]{7,15}$/;
-      if (!phoneRegex.test(updateProfileDto.phone.replace(/[\s\-\(\)]/g, ''))) {
+      if (!phoneRegex.test(updateProfileDto.phone.replace(/[\s\-()]/g, ''))) {
         warnings.push('Phone number format may not be valid');
       }
     }
 
-    // Bio length validation
-    if (updateProfileDto.bio && updateProfileDto.bio.length > 500) {
-      errors.push('Bio must be less than 500 characters');
+    // Bio length validation (for localized fields)
+    if (updateProfileDto.bio) {
+      const bio = updateProfileDto.bio as { en?: string; fr?: string } | string;
+      if (typeof bio === 'object' && bio !== null && 'en' in bio) {
+        if (bio.en && bio.en.length > 500) {
+          errors.push('Bio must be less than 500 characters');
+        }
+      } else if (typeof bio === 'string') {
+        if (bio.length > 500) {
+          errors.push('Bio must be less than 500 characters');
+        }
+      }
     }
 
     // Years of experience validation
